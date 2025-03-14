@@ -960,108 +960,110 @@
           }
         }
 
-        // Abrir modal de edição de usuário
-        async function openEditUserModal(userId) {
-          try {
-            // Buscar dados do usuário
-            const { data: user, error } = await supabase
-              .from("usuarios")
-              .select("*")
-              .eq("id", userId)
-              .single();
+       // Abrir modal de edição de usuário
+async function openEditUserModal(userId) {
+  try {
+    // Buscar dados do usuário - corrigido para usar supabaseClient
+    const { data: user, error } = await supabaseClient
+      .from("usuarios")
+      .select("*")
+      .eq("id", userId)
+      .single();
 
-            if (error) throw error;
+    if (error) throw error;
 
-            if (!user) {
-              alert("Usuário não encontrado.");
-              return;
-            }
+    if (!user) {
+      alert("Usuário não encontrado.");
+      return;
+    }
 
-            // Preencher o formulário com os dados do usuário
-            document.getElementById("edit-user-id").value = user.id;
-            document.getElementById("edit-username").value = user.username;
-            document.getElementById("edit-password").value = "";
-            document.getElementById("edit-fullname").value =
-              user.nome_completo || "";
-            document.getElementById("edit-role").value = user.cargo || "";
-            document.getElementById("edit-temp-user").checked =
-              user.is_temporario;
+    // Preencher o formulário com os dados do usuário
+    document.getElementById("edit-user-id").value = user.id;
+    document.getElementById("edit-username").value = user.username;
+    document.getElementById("edit-password").value = "";
+    document.getElementById("edit-fullname").value =
+      user.nome_completo || "";
+    document.getElementById("edit-role").value = user.cargo || "";
+    document.getElementById("edit-temp-user").checked =
+      user.is_temporario;
 
-            // Configurar campo de data de expiração
-            const expirationGroup = document.getElementById(
-              "edit-expiration-group"
-            );
-            if (user.is_temporario) {
-              expirationGroup.classList.remove("d-none");
-              editExpirationDatePicker.setDate(user.data_expiracao);
-            } else {
-              expirationGroup.classList.add("d-none");
-              editExpirationDatePicker.clear();
-            }
+    // Configurar campo de data de expiração
+    const expirationGroup = document.getElementById(
+      "edit-expiration-group"
+    );
+    if (user.is_temporario) {
+      expirationGroup.classList.remove("d-none");
+      editExpirationDatePicker.setDate(user.data_expiracao);
+    } else {
+      expirationGroup.classList.add("d-none");
+      editExpirationDatePicker.clear();
+    }
 
-            // Abrir o modal
-            editUserModal.show();
-          } catch (error) {
-            console.error("Erro ao buscar dados do usuário:", error);
-            alert(
-              "Erro ao buscar dados do usuário. Tente novamente mais tarde."
-            );
-          }
-        }
+    // Abrir o modal
+    editUserModal.show();
+  } catch (error) {
+    console.error("Erro ao buscar dados do usuário:", error);
+    alert(
+      "Erro ao buscar dados do usuário. Tente novamente mais tarde."
+    );
+  }
+}
 
-        // Salvar novo usuário
-        async function saveNewUser(userData) {
-          try {
-            const { data, error } = await supabase
-              .from("usuarios")
-              .insert([userData])
-              .select();
+// Salvar novo usuário
+async function saveNewUser(userData) {
+  try {
+    // Corrigido para usar supabaseClient
+    const { data, error } = await supabaseClient
+      .from("usuarios")
+      .insert([userData])
+      .select();
 
-            if (error) throw error;
+    if (error) throw error;
 
-            // Esconder modal e recarregar usuários
-            addUserModal.hide();
+    // Esconder modal e recarregar usuários
+    addUserModal.hide();
 
-            // Limpar formulário
-            document.getElementById("add-user-form").reset();
-            document
-              .getElementById("expiration-date-group")
-              .classList.add("d-none");
+    // Limpar formulário
+    document.getElementById("add-user-form").reset();
+    document
+      .getElementById("expiration-date-group")
+      .classList.add("d-none");
 
-            // Recarregar usuários
-            loadUsers();
+    // Recarregar usuários
+    loadUsers();
 
-            // Mostrar mensagem de sucesso
-            showAlert("Usuário adicionado com sucesso!", "success");
-          } catch (error) {
-            console.error("Erro ao salvar usuário:", error);
+    // Mostrar mensagem de sucesso
+    showAlert("Usuário adicionado com sucesso!", "success");
+  } catch (error) {
+    console.error("Erro ao salvar usuário:", error);
 
-            if (error.code === "23505") {
-              alert(
-                "Nome de usuário já existe. Por favor, escolha outro nome de usuário."
-              );
-            } else {
-              alert("Erro ao salvar usuário. Tente novamente mais tarde.");
-            }
-          }
-        }
+    if (error.code === "23505") {
+      alert(
+        "Nome de usuário já existe. Por favor, escolha outro nome de usuário."
+      );
+    } else {
+      alert("Erro ao salvar usuário. Tente novamente mais tarde.");
+    }
+  }
+}
 
-        // Atualizar usuário existente
-        async function updateUser(userId, userData) {
-          try {
-            const { data, error } = await supabase
-              .from("usuarios")
-              .update(userData)
-              .eq("id", userId)
-              .select();
+// Atualizar usuário existente
+async function updateUser(userId, userData) {
+  try {
+    // Corrigido para usar supabaseClient
+    const { data, error } = await supabaseClient
+      .from("usuarios")
+      .update(userData)
+      .eq("id", userId)
+      .select();
 
-            if (error) throw error;
+    if (error) throw error;
 
-            // Esconder modal e recarregar usuários
-            editUserModal.hide();
+    // Esconder modal e recarregar usuários
+    editUserModal.hide();
 
-            // Recarregar usuários
-            loadUsers();
+    // Recarregar usuários
+    loadUsers();
 
             // Mostrar mensagem de sucesso
             showAlert("Usuário atualizado com sucesso!", "success");
