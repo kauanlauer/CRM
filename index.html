@@ -105,52 +105,72 @@
       const loginAlert = document.getElementById('login-alert');
       const loginCard = document.querySelector('.login-card');
       
-      loginForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-        
-        try {
-          // Buscar o usuário pelo nome de usuário na tabela de usuários
-          const { data: users, error: fetchError } = await supabaseClient
-            .from('usuarios')
-            .select('*')
-            .eq('username', username)
-            .single();
-          
-          if (fetchError || !users) {
-            throw new Error('Usuário não encontrado');
-          }
-          
-          // Verificar a senha
-          if (users.password === password) {
-            // Login válido
-            loginAlert.classList.add('d-none');
-            
-            // Armazenar informações de autenticação
-            sessionStorage.setItem('authenticated', 'true');
-            sessionStorage.setItem('username', username);
-            sessionStorage.setItem('user_id', users.id);
-            
-            // Redireciona para a página principal
-            window.location.href = 'painel.html';
-          } else {
-            throw new Error('Senha incorreta');
-          }
-        } catch (error) {
-          console.error('Erro durante o login:', error);
-          
-          // Login inválido
-          loginAlert.classList.remove('d-none');
-          loginCard.classList.add('shake');
-          
-          // Remove a classe shake após a animação terminar
-          setTimeout(() => {
-            loginCard.classList.remove('shake');
-          }, 500);
-        }
+     // Substitua o código do evento de submit do login-form pelo seguinte:
+
+loginForm.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+  
+  try {
+    // Buscar o usuário pelo nome de usuário na tabela de usuários
+    const { data: users, error: fetchError } = await supabaseClient
+      .from('usuarios')
+      .select('*')
+      .eq('username', username)
+      .single();
+    
+    if (fetchError || !users) {
+      throw new Error('Usuário não encontrado');
+    }
+    
+    // Verificar a senha
+    if (users.password === password) {
+      // Login válido
+      loginAlert.classList.add('d-none');
+      
+      // Armazenar informações de autenticação
+      sessionStorage.setItem('authenticated', 'true');
+      sessionStorage.setItem('username', username);
+      sessionStorage.setItem('user_id', users.id);
+      sessionStorage.setItem('user_role', users.cargo);
+      
+      console.log('Login bem-sucedido:', {
+        authenticated: true,
+        username: username,
+        user_id: users.id,
+        user_role: users.cargo
       });
+      
+      // Atualizar o último login
+      const { error: updateError } = await supabaseClient
+        .from('usuarios')
+        .update({ ultimo_login: new Date().toISOString() })
+        .eq('id', users.id);
+      
+      if (updateError) {
+        console.error('Erro ao atualizar último login:', updateError);
+      }
+      
+      // Redireciona para a página principal
+      window.location.href = 'painel.html';
+    } else {
+      throw new Error('Senha incorreta');
+    }
+  } catch (error) {
+    console.error('Erro durante o login:', error);
+    
+    // Login inválido
+    loginAlert.classList.remove('d-none');
+    loginCard.classList.add('shake');
+    
+    // Remove a classe shake após a animação terminar
+    setTimeout(() => {
+      loginCard.classList.remove('shake');
+    }, 500);
+  }
+});
       
       // Verifica se existe um usuário salvo
       const rememberCheck = document.getElementById('remember');

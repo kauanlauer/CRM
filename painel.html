@@ -284,6 +284,124 @@ document.getElementById('btn-salvar-servico').addEventListener('click', async ()
           
           alert('Verifique o console para ver os dados da sessão');
         }
+        // Adicione esta função no início do seu script no painel.html
+document.addEventListener('DOMContentLoaded', function() {
+  // Verificar autenticação
+  const authenticated = sessionStorage.getItem('authenticated');
+  const username = sessionStorage.getItem('username');
+  const userRole = sessionStorage.getItem('user_role');
+  
+  if (authenticated !== 'true' || !username) {
+    window.location.href = 'index.html';
+    return;
+  }
+  
+  // Exibir informações do usuário
+  const userInfo = document.createElement('div');
+  userInfo.className = 'd-flex align-items-center mb-3 mt-2';
+  userInfo.innerHTML = `
+    <div class="user-avatar me-2">
+      <i class="fas fa-user-circle fa-2x"></i>
+    </div>
+    <div>
+      <div class="fw-bold">${username}</div>
+      <div class="small text-muted">${userRole || 'Usuário'}</div>
+    </div>
+    <div class="ms-auto">
+      <button id="logout-button" class="btn btn-sm btn-outline-danger">
+        <i class="fas fa-sign-out-alt"></i> Sair
+      </button>
+    </div>
+  `;
+  
+  // Adicionar à sidebar antes da navegação
+  const sidebar = document.querySelector('.position-sticky');
+  sidebar.insertBefore(userInfo, document.querySelector('.position-sticky .text-center'));
+  
+  // Adicionar evento de logout
+  document.getElementById('logout-button').addEventListener('click', function() {
+    sessionStorage.removeItem('authenticated');
+    sessionStorage.removeItem('username');
+    sessionStorage.removeItem('user_id');
+    sessionStorage.removeItem('user_role');
+    window.location.href = 'index.html';
+  });
+  
+  // Mostrar ou ocultar menu de usuários com base na permissão
+  const userManagementMenu = document.querySelector('#userDropdown').parentNode;
+  
+  if (username === 'kauanlauer' || userRole === 'Administrador') {
+    userManagementMenu.classList.remove('d-none');
+  } else {
+    userManagementMenu.classList.add('d-none');
+  }
+  
+  // Mostrar uma mensagem de boas-vindas no conteúdo principal
+  const mainContent = document.getElementById('main-content-area');
+  mainContent.innerHTML = `
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+      <h1 class="h3 mb-0 text-gray-800">Bem-vindo, ${username}!</h1>
+    </div>
+    <div class="row">
+      <!-- Aqui pode vir o conteúdo do dashboard -->
+    </div>
+  `;
+  
+  // Ativar o menu mobile toggle
+  const menuToggle = document.querySelector('.mobile-menu-toggle');
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.querySelector('.sidebar-overlay');
+  
+  if (menuToggle && sidebar && overlay) {
+    menuToggle.addEventListener('click', function() {
+      sidebar.classList.toggle('show');
+      overlay.classList.toggle('show');
+    });
+    
+    overlay.addEventListener('click', function() {
+      sidebar.classList.remove('show');
+      overlay.classList.remove('show');
+    });
+  }
+});
+
+// Função para exibir toast de notificação
+function showToast(message, title = 'Notificação', type = 'info') {
+  const toastEl = document.getElementById('toast-notification');
+  const toastTitle = document.getElementById('toast-title');
+  const toastMessage = document.getElementById('toast-message');
+  const toastTime = document.getElementById('toast-time');
+  
+  // Configurar classe de cor com base no tipo
+  toastEl.className = 'toast';
+  toastEl.classList.add(`bg-${type === 'danger' ? 'danger' : type === 'success' ? 'success' : 'light'}`);
+  if (type !== 'danger' && type !== 'success') {
+    toastEl.classList.add('text-dark');
+  } else {
+    toastEl.classList.add('text-white');
+  }
+  
+  // Definir conteúdo
+  toastTitle.textContent = title;
+  toastMessage.textContent = message;
+  toastTime.textContent = new Date().toLocaleTimeString();
+  
+  // Exibir toast
+  const toast = new bootstrap.Toast(toastEl);
+  toast.show();
+}
+
+// Verificar e mostrar dados da sessão (para depuração)
+function verificarSessao() {
+  console.log({
+    authenticated: sessionStorage.getItem('authenticated'),
+    username: sessionStorage.getItem('username'),
+    user_id: sessionStorage.getItem('user_id'),
+    user_role: sessionStorage.getItem('user_role')
+  });
+  
+  showToast('Dados da sessão verificados. Veja o console para detalhes.');
+}
       </script>
   </body>
 </html>
