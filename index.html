@@ -1,206 +1,317 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mini CRM - Serviços de TI</title>
-
-    <!-- Bootstrap 5 CSS -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-
-    <!-- FontAwesome -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-
-    <!-- Custom CSS -->
-    <style>
-      :root {
-        --primary-color: #4361ee;
-        --secondary-color: #3f37c9;
-        --success-color: #4cc9f0;
-        --danger-color: #f72585;
-        --light-bg: #f8f9fa;
-      }
-
-      .sidebar {
-        min-height: 100vh;
-        background-color: var(--primary-color);
-        color: white;
-      }
-
-      .sidebar .nav-link {
-        color: rgba(255, 255, 255, 0.85);
-        margin-bottom: 0.5rem;
-        border-radius: 0.25rem;
-        padding: 0.75rem 1rem;
-      }
-
-      .sidebar .nav-link:hover,
-      .sidebar .nav-link.active {
-        background-color: rgba(255, 255, 255, 0.1);
-        color: white;
-      }
-
-      .sidebar .nav-link i {
-        margin-right: 0.5rem;
-      }
-
-      .card-stats {
-        border-left: 4px solid var(--primary-color);
-        transition: transform 0.2s;
-      }
-
-      .card-stats:hover {
-        transform: translateY(-5px);
-      }
-
-      .card-stats.card-receitas {
-        border-left-color: var(--success-color);
-      }
-
-      .card-stats.card-despesas {
-        border-left-color: var(--danger-color);
-      }
-
-      .table-hover tbody tr:hover {
-        background-color: rgba(67, 97, 238, 0.05);
-      }
-      
-      /* Loading spinner */
-      .spinner-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100px;
-      }
-      
-      /* Badges e cores de status */
-      .badge-pendente {
-        background-color: var(--primary-color);
-      }
-      
-      .badge-em-andamento {
-        background-color: var(--warning-color);
-        color: #212529;
-      }
-      
-      .badge-concluido {
-        background-color: var(--success-color);
-      }
-      
-      .badge-cancelado {
-        background-color: var(--danger-color);
-      }
-      
-      /* Estilos para tabelas */
-      .table-action-buttons {
-        white-space: nowrap;
-      }
-      
-      /* Estilos para garantias com prazos próximos */
-      .garantia-proxima {
-        background-color: rgba(255, 193, 7, 0.2);
-      }
-      
-      .garantia-urgente {
-        background-color: rgba(220, 53, 69, 0.2);
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container-fluid">
-      <div class="row">
-        <!-- Sidebar -->
-        <div class="col-md-3 col-lg-2 d-md-block sidebar collapse">
-          <div class="position-sticky pt-3">
-            <div class="text-center mb-4">
-              <h4>Mini CRM</h4>
-              <p class="small">Serviços de TI</p>
-            </div>
-
-            <ul class="nav flex-column">
-              <li class="nav-item">
-                <a class="nav-link active" href="#" id="dashboard-link">
-                  <i class="fas fa-tachometer-alt"></i>
-                  Dashboard
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#" id="clientes-link">
-                  <i class="fas fa-users"></i>
-                  Clientes
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#" id="servicos-link">
-                  <i class="fas fa-tools"></i>
-                  Serviços
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#" id="ordens-link">
-                  <i class="fas fa-clipboard-list"></i>
-                  Ordens de Serviço
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#" id="garantias-link">
-                  <i class="fas fa-shield-alt"></i>
-                  Garantias
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#" id="financeiro-link">
-                  <i class="fas fa-chart-line"></i>
-                  Financeiro
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Main Content -->
-        <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-          <!-- Conteúdo será carregado dinamicamente via JavaScript -->
-          <div id="main-content-area">
-            <div class="d-flex justify-content-center my-5">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Carregando...</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Toast para notificações -->
-    <div class="toast-container position-fixed bottom-0 end-0 p-3">
-      <div id="toast-notification" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header">
-          <i class="fas fa-bell me-2"></i>
-          <strong class="me-auto" id="toast-title">Notificação</strong>
-          <small id="toast-time">Agora</small>
-          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-        <div class="toast-body" id="toast-message">
-          Mensagem de notificação
-        </div>
-      </div>
-    </div>
-
-    <!-- Bootstrap JS Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TI Service CRM - Login</title>
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --primary-color: #4361ee;
+      --secondary-color: #3f37c9;
+      --success-color: #4cc9f0;
+      --danger-color: #f72585;
+      --light-bg: #f8f9fa;
+    }
     
-    <!-- Scripts da aplicação -->
-    <script type="module" src="./js/app.js"></script>
-    <script type="module" src="./js/scripts.js"></script>
-  </body>
+    body {
+      height: 100vh;
+      background-color: #f5f7ff;
+      background-image: linear-gradient(135deg, #f5f7ff 0%, #c3cffe 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* Background decoration */
+    .bg-shape {
+      position: absolute;
+      opacity: 0.05;
+      z-index: -1;
+    }
+    
+    .bg-shape-1 {
+      top: -10%;
+      left: -5%;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background-color: var(--primary-color);
+    }
+    
+    .bg-shape-2 {
+      bottom: -15%;
+      right: -10%;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background-color: var(--success-color);
+    }
+    
+    .bg-shape-3 {
+      top: 40%;
+      right: 10%;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background-color: var(--danger-color);
+    }
+    
+    .login-container {
+      max-width: 430px;
+      width: 100%;
+      padding: 0 20px;
+    }
+    
+    .login-card {
+      background-color: white;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .login-header {
+      background-color: var(--primary-color);
+      padding: 30px;
+      text-align: center;
+      color: white;
+    }
+    
+    .login-header h2 {
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+    
+    .login-header p {
+      opacity: 0.8;
+      margin-bottom: 0;
+    }
+    
+    .login-body {
+      padding: 30px;
+    }
+    
+    .form-label {
+      font-weight: 500;
+      color: #555;
+    }
+    
+    .input-group .input-group-text {
+      background-color: transparent;
+      border-right: none;
+      color: #aaa;
+    }
+    
+    .form-control {
+      border-left: none;
+      padding-left: 0;
+    }
+    
+    .form-control:focus {
+      box-shadow: none;
+      border-color: #ced4da;
+    }
+    
+    .btn-login {
+      background-color: var(--primary-color);
+      border: none;
+      font-weight: 500;
+      padding: 10px;
+    }
+    
+    .btn-login:hover {
+      background-color: var(--secondary-color);
+    }
+    
+    .remember-forgot {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    
+    .login-footer {
+      text-align: center;
+      padding-bottom: 20px;
+      color: #777;
+    }
+    
+    /* Animação de shake para erro de login */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+      20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+    
+    .shake {
+      animation: shake 0.5s;
+    }
+    
+    /* Logo empresa */
+    .logo-wrapper {
+      margin-bottom: 15px;
+    }
+    
+    .logo {
+      width: 70px;
+      height: 70px;
+      background-color: white;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .logo i {
+      font-size: 36px;
+      color: var(--primary-color);
+    }
+  </style>
+</head>
+<body>
+  <!-- Background shapes -->
+  <div class="bg-shape bg-shape-1"></div>
+  <div class="bg-shape bg-shape-2"></div>
+  <div class="bg-shape bg-shape-3"></div>
+  
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="logo-wrapper">
+          <div class="logo">
+            <i class="fas fa-desktop"></i>
+          </div>
+        </div>
+        <h2>TI Service CRM</h2>
+        <p>Gerencie seus serviços de TI</p>
+      </div>
+      
+      <div class="login-body">
+        <div id="login-alert" class="alert alert-danger d-none" role="alert">
+          <i class="fas fa-exclamation-circle"></i> Usuário ou senha incorretos!
+        </div>
+        
+        <form id="login-form">
+          <div class="mb-3">
+            <label for="username" class="form-label">Usuário</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-user"></i></span>
+              <input type="text" class="form-control" id="username" placeholder="Digite seu usuário" required>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="password" class="form-label">Senha</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-lock"></i></span>
+              <input type="password" class="form-control" id="password" placeholder="Digite sua senha" required>
+              <button class="btn btn-outline-secondary toggle-password" type="button">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+          </div>
+          
+          <div class="remember-forgot">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="remember">
+              <label class="form-check-label" for="remember">
+                Lembrar-me
+              </label>
+            </div>
+            <a href="#" class="text-decoration-none">Esqueceu a senha?</a>
+          </div>
+          
+          <button type="submit" class="btn btn-primary btn-login w-100">
+            <i class="fas fa-sign-in-alt me-2"></i> Entrar
+          </button>
+        </form>
+      </div>
+      
+      <div class="login-footer">
+        &copy; 2025 TI Service CRM. Todos os direitos reservados.
+      </div>
+    </div>
+  </div>
+  
+  <!-- Bootstrap JS Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Configuração de usuários válidos
+      const validUsers = {
+        'kauanlauer': 'kauan3396',
+        'kauanfan': 'kauan3396',
+        'suportekauan': 'kauan3396'
+      };
+      
+      // Toggle de visibilidade da senha
+      const togglePassword = document.querySelector('.toggle-password');
+      const passwordInput = document.getElementById('password');
+      
+      togglePassword.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        this.querySelector('i').classList.toggle('fa-eye');
+        this.querySelector('i').classList.toggle('fa-eye-slash');
+      });
+      
+      // Validação do login
+      const loginForm = document.getElementById('login-form');
+      const loginAlert = document.getElementById('login-alert');
+      const loginCard = document.querySelector('.login-card');
+      
+      loginForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        
+        if (validUsers[username] && validUsers[username] === password) {
+          // Login válido
+          loginAlert.classList.add('d-none');
+          
+          // Redireciona para a página principal
+          window.location.href = 'painel.html';
+        } else {
+          // Login inválido
+          loginAlert.classList.remove('d-none');
+          loginCard.classList.add('shake');
+          
+          // Remove a classe shake após a animação terminar
+          setTimeout(() => {
+            loginCard.classList.remove('shake');
+          }, 500);
+        }
+      });
+      
+      // Verifica se existe um usuário salvo
+      const rememberCheck = document.getElementById('remember');
+      const usernameInput = document.getElementById('username');
+      
+      if (localStorage.getItem('rememberedUser')) {
+        usernameInput.value = localStorage.getItem('rememberedUser');
+        rememberCheck.checked = true;
+      }
+      
+      // Salva o usuário se lembrar-me estiver marcado
+      loginForm.addEventListener('submit', function() {
+        if (rememberCheck.checked) {
+          localStorage.setItem('rememberedUser', usernameInput.value);
+        } else {
+          localStorage.removeItem('rememberedUser');
+        }
+      });
+    });
+  </script>
+</body>
 </html>

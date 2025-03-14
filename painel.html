@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mini CRM - Serviços de TI</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- FontAwesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Custom CSS -->
+    <style>
+      :root {
+        --primary-color: #4361ee;
+        --secondary-color: #3f37c9;
+        --success-color: #4cc9f0;
+        --danger-color: #f72585;
+        --light-bg: #f8f9fa;
+      }
+
+      .sidebar {
+        min-height: 100vh;
+        background-color: var(--primary-color);
+        color: white;
+      }
+
+      .sidebar .nav-link {
+        color: rgba(255, 255, 255, 0.85);
+        margin-bottom: 0.5rem;
+        border-radius: 0.25rem;
+        padding: 0.75rem 1rem;
+      }
+
+      .sidebar .nav-link:hover,
+      .sidebar .nav-link.active {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white;
+      }
+
+      .sidebar .nav-link i {
+        margin-right: 0.5rem;
+      }
+
+      .card-stats {
+        border-left: 4px solid var(--primary-color);
+        transition: transform 0.2s;
+      }
+
+      .card-stats:hover {
+        transform: translateY(-5px);
+      }
+
+      .card-stats.card-receitas {
+        border-left-color: var(--success-color);
+      }
+
+      .card-stats.card-despesas {
+        border-left-color: var(--danger-color);
+      }
+
+      .table-hover tbody tr:hover {
+        background-color: rgba(67, 97, 238, 0.05);
+      }
+      
+      /* Loading spinner */
+      .spinner-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100px;
+      }
+      
+      /* Badges e cores de status */
+      .badge-pendente {
+        background-color: var(--primary-color);
+      }
+      
+      .badge-em-andamento {
+        background-color: var(--warning-color);
+        color: #212529;
+      }
+      
+      .badge-concluido {
+        background-color: var(--success-color);
+      }
+      
+      .badge-cancelado {
+        background-color: var(--danger-color);
+      }
+      
+      /* Estilos para tabelas */
+      .table-action-buttons {
+        white-space: nowrap;
+      }
+      
+      /* Estilos para garantias com prazos próximos */
+      .garantia-proxima {
+        background-color: rgba(255, 193, 7, 0.2);
+      }
+      
+      .garantia-urgente {
+        background-color: rgba(220, 53, 69, 0.2);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+          <div class="position-sticky pt-3">
+            <div class="text-center mb-4">
+              <h4>Mini CRM</h4>
+              <p class="small">Serviços de TI</p>
+            </div>
+
+            <ul class="nav flex-column">
+              <li class="nav-item">
+                <a class="nav-link active" href="#" id="dashboard-link">
+                  <i class="fas fa-tachometer-alt"></i>
+                  Dashboard
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#" id="clientes-link">
+                  <i class="fas fa-users"></i>
+                  Clientes
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#" id="servicos-link">
+                  <i class="fas fa-tools"></i>
+                  Serviços
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#" id="ordens-link">
+                  <i class="fas fa-clipboard-list"></i>
+                  Ordens de Serviço
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#" id="garantias-link">
+                  <i class="fas fa-shield-alt"></i>
+                  Garantias
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#" id="financeiro-link">
+                  <i class="fas fa-chart-line"></i>
+                  Financeiro
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+          <!-- Conteúdo será carregado dinamicamente via JavaScript -->
+          <div id="main-content-area">
+            <div class="d-flex justify-content-center my-5">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Carregando...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast para notificações -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+      <div id="toast-notification" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+          <i class="fas fa-bell me-2"></i>
+          <strong class="me-auto" id="toast-title">Notificação</strong>
+          <small id="toast-time">Agora</small>
+          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toast-message">
+          Mensagem de notificação
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    
+    <!-- Scripts da aplicação -->
+    <script type="module" src="./js/app.js"></script>
+    <script type="module" src="./js/scripts.js"></script>
+  </body>
+</html>
