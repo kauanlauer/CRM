@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TI Service CRM - Login</title>
+  <title>TI KL CRM - Login</title>
   
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -312,6 +312,79 @@
         }
       });
     });
+
+    // Atualização para o script de login em index.html
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Configuração de usuários válidos
+    const validUsers = {
+      'kauanlauer': 'kauan3396',
+      'kauanfan': 'kauan3396',
+      'suportekauan': 'kauan3396'
+    };
+    
+    // Toggle de visibilidade da senha
+    const togglePassword = document.querySelector('.toggle-password');
+    const passwordInput = document.getElementById('password');
+    
+    togglePassword.addEventListener('click', function() {
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+      this.querySelector('i').classList.toggle('fa-eye');
+      this.querySelector('i').classList.toggle('fa-eye-slash');
+    });
+    
+    // Validação do login
+    const loginForm = document.getElementById('login-form');
+    const loginAlert = document.getElementById('login-alert');
+    const loginCard = document.querySelector('.login-card');
+    
+    loginForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      
+      if (validUsers[username] && validUsers[username] === password) {
+        // Login válido
+        loginAlert.classList.add('d-none');
+        
+        // Armazenar informações de autenticação
+        sessionStorage.setItem('authenticated', 'true');
+        sessionStorage.setItem('username', username);
+        
+        // Redireciona para a página principal
+        window.location.href = 'painel.html';
+      } else {
+        // Login inválido
+        loginAlert.classList.remove('d-none');
+        loginCard.classList.add('shake');
+        
+        // Remove a classe shake após a animação terminar
+        setTimeout(() => {
+          loginCard.classList.remove('shake');
+        }, 500);
+      }
+    });
+    
+    // Verifica se existe um usuário salvo
+    const rememberCheck = document.getElementById('remember');
+    const usernameInput = document.getElementById('username');
+    
+    if (localStorage.getItem('rememberedUser')) {
+      usernameInput.value = localStorage.getItem('rememberedUser');
+      rememberCheck.checked = true;
+    }
+    
+    // Salva o usuário se lembrar-me estiver marcado
+    loginForm.addEventListener('submit', function() {
+      if (rememberCheck.checked) {
+        localStorage.setItem('rememberedUser', usernameInput.value);
+      } else {
+        localStorage.removeItem('rememberedUser');
+      }
+    });
+  });
   </script>
 </body>
 </html>
