@@ -720,7 +720,11 @@ h1.h2 {
     </div>
   </div>
 </div>
-`;
+<!-- Controles Mobile -->
+<button class="mobile-menu-toggle d-md-none">
+  <i class="fas fa-bars"></i>
+</button>
+<div class="sidebar-overlay"></div>
 
 
     <!-- Toast para notificações -->
@@ -788,6 +792,26 @@ document.getElementById('btn-salvar-servico').addEventListener('click', async ()
     showToast('Erro ao adicionar serviço: ' + error.message, 'Erro', 'danger');
   }
 });
+      </script>
+      <script>
+        // Menu mobile toggle
+        document.addEventListener('DOMContentLoaded', function() {
+          const menuToggle = document.querySelector('.mobile-menu-toggle');
+          const sidebar = document.querySelector('.sidebar');
+          const overlay = document.querySelector('.sidebar-overlay');
+          
+          if (menuToggle && sidebar && overlay) {
+            menuToggle.addEventListener('click', function() {
+              sidebar.classList.toggle('show');
+              overlay.classList.toggle('show');
+            });
+            
+            overlay.addEventListener('click', function() {
+              sidebar.classList.remove('show');
+              overlay.classList.remove('show');
+            });
+          }
+        });
       </script>
   </body>
 </html>
