@@ -253,7 +253,7 @@
       // Inicialização do cliente Supabase
       const SUPABASE_URL = 'https://rdhftnrksrawaahoqgpo.supabase.co';
       const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkaGZ0bnJrc3Jhd2FhaG9xZ3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE5ODA3NDQsImV4cCI6MjA1NzU1Njc0NH0.v7ItKQTkx9TNGoPBIlsgcwYUQ3jA8PlY1SaIj6bH5qA';
-      const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       
       // Toggle de visibilidade da senha
       const togglePassword = document.querySelector('.toggle-password');
@@ -279,7 +279,7 @@
         
         try {
           // Buscar o usuário pelo nome de usuário na tabela de usuários
-          const { data: users, error: fetchError } = await supabaseClient
+          const { data: users, error: fetchError } = await supabase
             .from('usuarios')
             .select('*')
             .eq('username', username)
@@ -289,15 +289,36 @@
             throw new Error('Usuário não encontrado');
           }
           
+          // Verificar se o usuário está expirado
+          if (users.is_temporario && users.data_expiracao) {
+            const expirationDate = new Date(users.data_expiracao);
+            const currentDate = new Date();
+            
+            if (expirationDate < currentDate) {
+              throw new Error('Usuário expirado');
+            }
+          }
+          
           // Verificar a senha
           if (users.password === password) {
             // Login válido
             loginAlert.classList.add('d-none');
             
+            // Atualizar último login
+            const { error: updateError } = await supabase
+              .from('usuarios')
+              .update({ ultimo_login: new Date().toISOString() })
+              .eq('id', users.id);
+              
+            if (updateError) {
+              console.error('Erro ao atualizar último login:', updateError);
+            }
+            
             // Armazenar informações de autenticação
             sessionStorage.setItem('authenticated', 'true');
             sessionStorage.setItem('username', username);
             sessionStorage.setItem('user_id', users.id);
+            sessionStorage.setItem('user_role', users.cargo || '');
             
             // Redireciona para a página principal
             window.location.href = 'painel.html';
