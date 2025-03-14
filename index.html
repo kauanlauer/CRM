@@ -11,6 +11,9 @@
   <!-- FontAwesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
   <style>
     :root {
       --primary-color: #4361ee;
@@ -247,12 +250,10 @@
   
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Configuração de usuários válidos
-      const validUsers = {
-        'kauanlauer': 'kauan3396',
-        'kauanfan': 'kauan3396',
-        'suportekauan': 'kauan3396'
-      };
+      // Inicialização do cliente Supabase
+      const SUPABASE_URL = 'SUA_URL_DO_SUPABASE';
+      const SUPABASE_KEY = 'SUA_CHAVE_ANON_KEY_DO_SUPABASE';
+      const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       
       // Toggle de visibilidade da senha
       const togglePassword = document.querySelector('.toggle-password');
@@ -270,19 +271,42 @@
       const loginAlert = document.getElementById('login-alert');
       const loginCard = document.querySelector('.login-card');
       
-      loginForm.addEventListener('submit', function(e) {
+      loginForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
         
-        if (validUsers[username] && validUsers[username] === password) {
-          // Login válido
-          loginAlert.classList.add('d-none');
+        try {
+          // Buscar o usuário pelo nome de usuário na tabela de usuários
+          const { data: users, error: fetchError } = await supabase
+            .from('usuarios')
+            .select('*')
+            .eq('username', username)
+            .single();
           
-          // Redireciona para a página principal
-          window.location.href = 'painel.html';
-        } else {
+          if (fetchError || !users) {
+            throw new Error('Usuário não encontrado');
+          }
+          
+          // Verificar a senha
+          if (users.password === password) {
+            // Login válido
+            loginAlert.classList.add('d-none');
+            
+            // Armazenar informações de autenticação
+            sessionStorage.setItem('authenticated', 'true');
+            sessionStorage.setItem('username', username);
+            sessionStorage.setItem('user_id', users.id);
+            
+            // Redireciona para a página principal
+            window.location.href = 'painel.html';
+          } else {
+            throw new Error('Senha incorreta');
+          }
+        } catch (error) {
+          console.error('Erro durante o login:', error);
+          
           // Login inválido
           loginAlert.classList.remove('d-none');
           loginCard.classList.add('shake');
@@ -312,80 +336,6 @@
         }
       });
     });
-
-    // Atualização para o script de login em index.html
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Configuração de usuários válidos
-    const validUsers = {
-      'kauanlauer': 'kauan3396',
-      'kauanfan': 'kauan3396',
-      'suportekauan': 'kauan3396'
-    };
-    
-    // Toggle de visibilidade da senha
-    const togglePassword = document.querySelector('.toggle-password');
-    const passwordInput = document.getElementById('password');
-    
-    togglePassword.addEventListener('click', function() {
-      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-      passwordInput.setAttribute('type', type);
-      this.querySelector('i').classList.toggle('fa-eye');
-      this.querySelector('i').classList.toggle('fa-eye-slash');
-    });
-    
-    // Validação do login
-    const loginForm = document.getElementById('login-form');
-    const loginAlert = document.getElementById('login-alert');
-    const loginCard = document.querySelector('.login-card');
-    
-    loginForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
-      
-      if (validUsers[username] && validUsers[username] === password) {
-        // Login válido
-        loginAlert.classList.add('d-none');
-        
-        // Armazenar informações de autenticação
-        sessionStorage.setItem('authenticated', 'true');
-        sessionStorage.setItem('username', username);
-        
-        // Redireciona para a página principal
-        window.location.href = 'painel.html';
-      } else {
-        // Login inválido
-        loginAlert.classList.remove('d-none');
-        loginCard.classList.add('shake');
-        
-        // Remove a classe shake após a animação terminar
-        setTimeout(() => {
-          loginCard.classList.remove('shake');
-        }, 500);
-      }
-    });
-    
-    // Verifica se existe um usuário salvo
-    const rememberCheck = document.getElementById('remember');
-    const usernameInput = document.getElementById('username');
-    
-    if (localStorage.getItem('rememberedUser')) {
-      usernameInput.value = localStorage.getItem('rememberedUser');
-      rememberCheck.checked = true;
-    }
-    
-    // Salva o usuário se lembrar-me estiver marcado
-    loginForm.addEventListener('submit', function() {
-      if (rememberCheck.checked) {
-        localStorage.setItem('rememberedUser', usernameInput.value);
-      } else {
-        localStorage.removeItem('rememberedUser');
-      }
-    });
-  });
   </script>
-  
 </body>
 </html>
