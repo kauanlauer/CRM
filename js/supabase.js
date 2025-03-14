@@ -125,5 +125,28 @@ export {
   getClientes,
   addCliente,
   createOrdemServico,
-  getResumoFinanceiro
+  getResumoFinanceiro,
+  addServico
+};
+
+// Adicione esta função ao arquivo supabase.js
+async function addServico(servico) {
+  const { data, error } = await supabase
+    .from('servicos')
+    .insert([
+      { 
+        nome: servico.nome,
+        descricao: servico.descricao,
+        preco_padrao: servico.preco_padrao,
+        tempo_garantia_dias: servico.tempo_garantia_dias
+      }
+    ])
+    .select();
+  
+  if (error) {
+    console.error('Erro ao adicionar serviço:', error);
+    return null;
+  }
+  
+  return data[0];
 }

@@ -742,10 +742,12 @@ async function inicializarGraficoFaturamento() {
         </div>
       `;
       
-      // Configurar evento para botão "Novo Serviço"
-      document.getElementById('btn-novo-servico').addEventListener('click', () => {
-        showToast('Funcionalidade em desenvolvimento', 'Info', 'info');
-      });
+      // Substitua o evento do botão "Novo Serviço" na função loadServicos() com este código:
+document.getElementById('btn-novo-servico').addEventListener('click', () => {
+  const modalNovoServico = new bootstrap.Modal(document.getElementById('modalNovoServico'));
+  modalNovoServico.show();
+});
+
       
       // Configurar eventos para botões de edição e exclusão
       document.querySelectorAll('.btn-edit-servico').forEach(btn => {

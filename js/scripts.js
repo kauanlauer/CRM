@@ -122,3 +122,5 @@ function showToast(message, title = 'Notificação', type = 'info') {
     getStatusBadgeClass,
     validateForm
   };
+
+  
