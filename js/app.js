@@ -1,6 +1,6 @@
 // app.js - Gerenciamento da navegação e carregamento de conteúdo
 
-import { supabase, getClientes, addCliente, createOrdemServico, getResumoFinanceiro } from './supabase.js';
+import { supabase, getClientes, addCliente, createOrdemServico, getResumoFinanceiro, addServico, getServicos, updateServico, deleteServico } from './supabase.js';
 import { showToast, formatCurrency, formatDate, dateDiffInDays, formatStatus, getStatusBadgeClass, validateForm } from './scripts.js';
 
 // Quando o DOM estiver carregado
@@ -108,7 +108,6 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
       `;
       
-      // Mostra toast de erro
       showToast(`Erro ao carregar ${sectionName}: ${error.message}`, 'Erro', 'danger');
     }
   }
@@ -267,7 +266,6 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
       `;
       
-      // Mostra toast de erro
       showToast(`Erro ao carregar dashboard: ${error.message}`, 'Erro', 'danger');
     }
   }
@@ -393,8 +391,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-// Inicializar gráfico de faturamento
-async function inicializarGraficoFaturamento() {
+  // Inicializar gráfico de faturamento
+  async function inicializarGraficoFaturamento() {
     try {
       // Obter dados de faturamento dos últimos 6 meses
       const dataAtual = new Date();
@@ -695,12 +693,7 @@ async function inicializarGraficoFaturamento() {
   async function loadServicos() {
     try {
       // Obter lista de serviços
-      const { data: servicos, error } = await supabase
-        .from('servicos')
-        .select('*')
-        .order('nome');
-      
-      if (error) throw error;
+      const servicos = await getServicos();
       
       // Renderizar conteúdo
       mainContent.innerHTML = `
@@ -722,8 +715,7 @@ async function inicializarGraficoFaturamento() {
             <div class="table-responsive">
               <table class="table table-hover">
                 <thead>
-                  <tr>
-                    <th>Nome</th>
+                  <th>Nome</th>
                     <th>Descrição</th>
                     <th>Preço Padrão</th>
                     <th>Garantia (dias)</th>
@@ -740,28 +732,208 @@ async function inicializarGraficoFaturamento() {
             <span class="text-muted">Total: ${servicos ? servicos.length : 0} serviço(s)</span>
           </div>
         </div>
+        
+        <!-- Modal de Novo Serviço -->
+        <div class="modal fade" id="modalNovoServico" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Novo Serviço</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <form id="form-novo-servico">
+                  <div class="mb-3">
+                    <label for="servico-nome" class="form-label">Nome do Serviço *</label>
+                    <input type="text" class="form-control" id="servico-nome" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="servico-descricao" class="form-label">Descrição</label>
+                    <textarea class="form-control" id="servico-descricao" rows="2"></textarea>
+                  </div>
+                  <div class="mb-3">
+                    <label for="servico-preco" class="form-label">Preço Padrão (R$) *</label>
+                    <input type="number" class="form-control" id="servico-preco" min="0" step="0.01" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="servico-garantia" class="form-label">Tempo de Garantia (dias)</label>
+                    <input type="number" class="form-control" id="servico-garantia" min="0" value="30">
+                  </div>
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btn-salvar-servico">Salvar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal de Editar Serviço -->
+        <div class="modal fade" id="modalEditarServico" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Editar Serviço</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <form id="form-editar-servico">
+                  <input type="hidden" id="edit-servico-id">
+                  <div class="mb-3">
+                    <label for="edit-servico-nome" class="form-label">Nome do Serviço *</label>
+                    <input type="text" class="form-control" id="edit-servico-nome" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="edit-servico-descricao" class="form-label">Descrição</label>
+                    <textarea class="form-control" id="edit-servico-descricao" rows="2"></textarea>
+                  </div>
+                  <div class="mb-3">
+                    <label for="edit-servico-preco" class="form-label">Preço Padrão (R$) *</label>
+                    <input type="number" class="form-control" id="edit-servico-preco" min="0" step="0.01" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="edit-servico-garantia" class="form-label">Tempo de Garantia (dias)</label>
+                    <input type="number" class="form-control" id="edit-servico-garantia" min="0">
+                  </div>
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btn-atualizar-servico">Atualizar</button>
+              </div>
+            </div>
+          </div>
+        </div>
       `;
       
-      // Substitua o evento do botão "Novo Serviço" na função loadServicos() com este código:
-document.getElementById('btn-novo-servico').addEventListener('click', () => {
-  const modalNovoServico = new bootstrap.Modal(document.getElementById('modalNovoServico'));
-  modalNovoServico.show();
-});
-
+      // Inicializar os modais
+      const modalNovoServico = new bootstrap.Modal(document.getElementById('modalNovoServico'));
+      const modalEditarServico = new bootstrap.Modal(document.getElementById('modalEditarServico'));
       
-      // Configurar eventos para botões de edição e exclusão
+      // Configurar evento do botão "Novo Serviço"
+      document.getElementById('btn-novo-servico').addEventListener('click', () => {
+        // Limpar formulário
+        document.getElementById('form-novo-servico').reset();
+        modalNovoServico.show();
+      });
+      
+      // Configurar evento do botão "Salvar Serviço"
+      document.getElementById('btn-salvar-servico').addEventListener('click', async () => {
+        const nome = document.getElementById('servico-nome').value.trim();
+        const descricao = document.getElementById('servico-descricao').value.trim();
+        const preco_padrao = parseFloat(document.getElementById('servico-preco').value);
+        const tempo_garantia_dias = parseInt(document.getElementById('servico-garantia').value);
+        
+        if (!nome || isNaN(preco_padrao)) {
+          alert('Por favor, preencha todos os campos obrigatórios.');
+          return;
+        }
+        
+        try {
+          const novoServico = await addServico({
+            nome,
+            descricao,
+            preco_padrao,
+            tempo_garantia_dias
+          });
+          
+          if (novoServico) {
+            modalNovoServico.hide();
+            showToast('Serviço adicionado com sucesso!', 'Sucesso', 'success');
+            loadServicos(); // Recarregar a lista de serviços
+          } else {
+            alert('Erro ao adicionar serviço.');
+          }
+        } catch (error) {
+          console.error('Erro ao salvar serviço:', error);
+          showToast('Erro ao adicionar serviço: ' + error.message, 'Erro', 'danger');
+        }
+      });
+      
+      // Configurar eventos para botões de edição
       document.querySelectorAll('.btn-edit-servico').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
           const servicoId = btn.getAttribute('data-id');
-          showToast(`Editando serviço ${servicoId}`, 'Info', 'info');
+          
+          try {
+            // Buscar dados do serviço
+            const { data: servico, error } = await supabase
+              .from('servicos')
+              .select('*')
+              .eq('id', servicoId)
+              .single();
+            
+            if (error) throw error;
+            
+            // Preencher formulário
+            document.getElementById('edit-servico-id').value = servico.id;
+            document.getElementById('edit-servico-nome').value = servico.nome;
+            document.getElementById('edit-servico-descricao').value = servico.descricao || '';
+            document.getElementById('edit-servico-preco').value = servico.preco_padrao;
+            document.getElementById('edit-servico-garantia').value = servico.tempo_garantia_dias;
+            
+            // Mostrar modal
+            modalEditarServico.show();
+          } catch (error) {
+            console.error('Erro ao buscar serviço:', error);
+            showToast('Erro ao carregar dados do serviço: ' + error.message, 'Erro', 'danger');
+          }
         });
       });
       
+      // Configurar evento do botão "Atualizar Serviço"
+      document.getElementById('btn-atualizar-servico').addEventListener('click', async () => {
+        const id = document.getElementById('edit-servico-id').value;
+        const nome = document.getElementById('edit-servico-nome').value.trim();
+        const descricao = document.getElementById('edit-servico-descricao').value.trim();
+        const preco_padrao = parseFloat(document.getElementById('edit-servico-preco').value);
+        const tempo_garantia_dias = parseInt(document.getElementById('edit-servico-garantia').value);
+        
+        if (!nome || isNaN(preco_padrao)) {
+          alert('Por favor, preencha todos os campos obrigatórios.');
+          return;
+        }
+        
+        try {
+          const servicoAtualizado = await updateServico(id, {
+            nome,
+            descricao,
+            preco_padrao,
+            tempo_garantia_dias
+          });
+          
+          if (servicoAtualizado) {
+            modalEditarServico.hide();
+            showToast('Serviço atualizado com sucesso!', 'Sucesso', 'success');
+            loadServicos(); // Recarregar a lista de serviços
+          } else {
+            alert('Erro ao atualizar serviço.');
+          }
+        } catch (error) {
+          console.error('Erro ao atualizar serviço:', error);
+          showToast('Erro ao atualizar serviço: ' + error.message, 'Erro', 'danger');
+        }
+      });
+      
+      // Configurar eventos para botões de exclusão
       document.querySelectorAll('.btn-delete-servico').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
           const servicoId = btn.getAttribute('data-id');
-          if (confirm('Tem certeza que deseja excluir este serviço?')) {
-            showToast(`Excluindo serviço ${servicoId}`, 'Info', 'warning');
+          if (confirm('Tem certeza que deseja excluir este serviço? Esta ação não pode ser desfeita.')) {
+            try {
+              const excluido = await deleteServico(servicoId);
+              
+              if (excluido) {
+                showToast('Serviço excluído com sucesso!', 'Sucesso', 'success');
+                loadServicos(); // Recarregar a lista de serviços
+              } else {
+                alert('Erro ao excluir serviço.');
+              }
+            } catch (error) {
+              console.error('Erro ao excluir serviço:', error);
+              showToast('Erro ao excluir serviço: ' + error.message, 'Erro', 'danger');
+            }
           }
         });
       });
@@ -825,6 +997,12 @@ document.getElementById('btn-novo-servico').addEventListener('click', () => {
         .order('data_criacao', { ascending: false });
       
       if (error) throw error;
+      
+      // Obter lista de clientes para o formulário
+      const clientes = await getClientes();
+      
+      // Obter lista de serviços para o formulário
+      const servicos = await getServicos();
       
       // Renderizar conteúdo
       mainContent.innerHTML = `
@@ -894,28 +1072,549 @@ document.getElementById('btn-novo-servico').addEventListener('click', () => {
             <span class="text-muted">Total: ${ordens ? ordens.length : 0} ordem(ns)</span>
           </div>
         </div>
+        
+        <!-- Modal de Nova Ordem -->
+        <div class="modal fade" id="modalNovaOrdem" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Nova Ordem de Serviço</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <form id="form-nova-ordem">
+                  <div class="mb-3">
+                    <label for="ordem-cliente" class="form-label">Cliente *</label>
+                    <select class="form-select" id="ordem-cliente" required>
+                      <option value="">Selecione um cliente</option>
+                      ${clientes.map(cliente => `<option value="${cliente.id}">${cliente.nome}</option>`).join('')}
+                    </select>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label for="ordem-problema" class="form-label">Descrição do Problema *</label>
+                    <textarea class="form-control" id="ordem-problema" rows="3" required></textarea>
+                  </div>
+                  
+                  <h6 class="mt-4 mb-3">Serviços</h6>
+                  
+                  <div id="servicos-container">
+                    <div class="row g-3 mb-3 servico-item">
+                      <div class="col-md-5">
+                        <select class="form-select servico-select" required>
+                          <option value="">Selecione um serviço</option>
+                          ${servicos.map(servico => `<option value="${servico.id}" data-preco="${servico.preco_padrao}">${servico.nome}</option>`).join('')}
+                        </select>
+                      </div>
+                      <div class="col-md-2">
+                        <input type="number" class="form-control servico-qtd" min="1" value="1" placeholder="Qtd">
+                      </div>
+                      <div class="col-md-3">
+                        <input type="number" class="form-control servico-valor" min="0" step="0.01" placeholder="Valor (R$)">
+                      </div>
+                      <div class="col-md-2">
+                        <button type="button" class="btn btn-outline-danger w-100 btn-remover-servico">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <button type="button" class="btn btn-outline-primary" id="btn-adicionar-servico">
+                      <i class="fas fa-plus"></i> Adicionar Serviço
+                    </button>
+                  </div>
+                  
+                  <div class="row mb-3">
+                    <div class="col-md-6">
+                      <label for="ordem-status" class="form-label">Status</label>
+                      <select class="form-select" id="ordem-status">
+                        <option value="pendente">Pendente</option>
+                        <option value="em_andamento">Em andamento</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="ordem-valor-total" class="form-label">Valor Total (R$)</label>
+                      <input type="number" class="form-control" id="ordem-valor-total" readonly>
+                    </div>
+                  </div>
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btn-salvar-ordem">Salvar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Modal de Visualizar Ordem -->
+        <div class="modal fade" id="modalVisualizarOrdem" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Detalhes da Ordem de Serviço</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body" id="visualizar-ordem-content">
+                <!-- Conteúdo será preenchido dinamicamente -->
+                <div class="d-flex justify-content-center my-5">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Carregando...</span>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <button type="button" class="btn btn-success" id="btn-concluir-ordem">Concluir Ordem</button>
+                <button type="button" class="btn btn-danger" id="btn-cancelar-ordem">Cancelar Ordem</button>
+              </div>
+            </div>
+          </div>
+        </div>
       `;
       
-      // Configurar evento para botão "Nova Ordem"
+      // Inicializar os modais
+      const modalNovaOrdem = new bootstrap.Modal(document.getElementById('modalNovaOrdem'));
+      const modalVisualizarOrdem = new bootstrap.Modal(document.getElementById('modalVisualizarOrdem'));
+      
+      // Configurar evento do botão "Nova Ordem"
       document.getElementById('btn-nova-ordem').addEventListener('click', () => {
-        showToast('Funcionalidade em desenvolvimento', 'Info', 'info');
+        // Limpar formulário
+        document.getElementById('form-nova-ordem').reset();
+        document.getElementById('ordem-valor-total').value = '0.00';
+        
+        // Configurar evento de seleção de serviço para preencher preço automaticamente
+        configurarEventosServicos();
+        
+        modalNovaOrdem.show();
       });
       
-      // Configurar evento para o botão de filtrar
-      document.getElementById('btn-filtrar').addEventListener('click', () => {
-        const status = document.getElementById('filtro-status').value;
-        const cliente = document.getElementById('filtro-cliente').value.trim();
-        const data = document.getElementById('filtro-data').value;
+      // Configurar eventos para os serviços
+      function configurarEventosServicos() {
+        // Evento para preencher valor do serviço
+        document.querySelectorAll('.servico-select').forEach(select => {
+          select.addEventListener('change', function() {
+            const option = this.options[this.selectedIndex];
+            const precoServico = option.getAttribute('data-preco');
+            
+            // Encontrar o input de valor dentro da mesma linha
+            const row = this.closest('.servico-item');
+            const inputValor = row.querySelector('.servico-valor');
+            
+            if (precoServico) {
+              inputValor.value = precoServico;
+              atualizarValorTotal();
+            }
+          });
+        });
         
-        showToast(`Filtro aplicado: Status=${status}, Cliente=${cliente}, Data=${data}`, 'Info', 'info');
+        // Evento para quantidade alterar valor total
+        document.querySelectorAll('.servico-qtd').forEach(input => {
+          input.addEventListener('change', atualizarValorTotal);
+        });
+        
+        // Evento para valor unitário alterar valor total
+        document.querySelectorAll('.servico-valor').forEach(input => {
+          input.addEventListener('change', atualizarValorTotal);
+        });
+        
+        // Configurar botões de remover serviço
+        document.querySelectorAll('.btn-remover-servico').forEach(btn => {
+          btn.addEventListener('click', function() {
+            // Não remover se for o único item
+            const itens = document.querySelectorAll('.servico-item');
+            if (itens.length > 1) {
+              this.closest('.servico-item').remove();
+              atualizarValorTotal();
+            } else {
+              alert('É necessário pelo menos um serviço na ordem.');
+            }
+          });
+        });
+      }
+      
+      // Configurar botão de adicionar serviço
+      document.getElementById('btn-adicionar-servico').addEventListener('click', () => {
+        const servicosContainer = document.getElementById('servicos-container');
+        const novoItem = document.createElement('div');
+        novoItem.className = 'row g-3 mb-3 servico-item';
+        novoItem.innerHTML = `
+          <div class="col-md-5">
+            <select class="form-select servico-select" required>
+              <option value="">Selecione um serviço</option>
+              ${servicos.map(servico => `<option value="${servico.id}" data-preco="${servico.preco_padrao}">${servico.nome}</option>`).join('')}
+            </select>
+          </div>
+          <div class="col-md-2">
+            <input type="number" class="form-control servico-qtd" min="1" value="1" placeholder="Qtd">
+          </div>
+          <div class="col-md-3">
+            <input type="number" class="form-control servico-valor" min="0" step="0.01" placeholder="Valor (R$)">
+          </div>
+          <div class="col-md-2">
+            <button type="button" class="btn btn-outline-danger w-100 btn-remover-servico">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        `;
+        
+        servicosContainer.appendChild(novoItem);
+        configurarEventosServicos(); // Configurar os eventos do novo item
+      });
+      
+      // Função para atualizar o valor total
+      function atualizarValorTotal() {
+        let total = 0;
+        
+        document.querySelectorAll('.servico-item').forEach(item => {
+          const quantidade = parseInt(item.querySelector('.servico-qtd').value) || 0;
+          const valorUnitario = parseFloat(item.querySelector('.servico-valor').value) || 0;
+          total += quantidade * valorUnitario;
+        });
+        
+        document.getElementById('ordem-valor-total').value = total.toFixed(2);
+      }
+      
+      // Configurar evento do botão "Salvar Ordem"
+      document.getElementById('btn-salvar-ordem').addEventListener('click', async () => {
+        // Validar formulário
+        const clienteId = document.getElementById('ordem-cliente').value;
+        const descricaoProblema = document.getElementById('ordem-problema').value.trim();
+        
+        if (!clienteId || !descricaoProblema) {
+          alert('Por favor, preencha todos os campos obrigatórios.');
+          return;
+        }
+        
+        // Coletar itens de serviço
+        const itens = [];
+        let itensValidos = true;
+        
+        document.querySelectorAll('.servico-item').forEach(item => {
+          const servicoId = item.querySelector('.servico-select').value;
+          const quantidade = parseInt(item.querySelector('.servico-qtd').value) || 0;
+          const valorUnitario = parseFloat(item.querySelector('.servico-valor').value) || 0;
+          
+          if (!servicoId || quantidade <= 0 || valorUnitario <= 0) {
+            itensValidos = false;
+            return;
+          }
+          
+          itens.push({
+            servico_id: servicoId,
+            quantidade,
+            valor_unitario: valorUnitario
+          });
+        });
+        
+        if (!itensValidos || itens.length === 0) {
+          alert('Por favor, preencha corretamente todos os serviços da ordem.');
+          return;
+        }
+        
+        const status = document.getElementById('ordem-status').value;
+        const valorTotal = parseFloat(document.getElementById('ordem-valor-total').value);
+        
+        try {
+          // Criar ordem de serviço
+          const novaOrdem = await createOrdemServico({
+            cliente_id: clienteId,
+            descricao_problema: descricaoProblema,
+            status,
+            valor_total: valorTotal,
+            itens
+          });
+          
+          if (novaOrdem) {
+            modalNovaOrdem.hide();
+            showToast('Ordem de serviço criada com sucesso!', 'Sucesso', 'success');
+            loadOrdens(); // Recarregar a lista de ordens
+          } else {
+            alert('Erro ao criar ordem de serviço.');
+          }
+        } catch (error) {
+          console.error('Erro ao salvar ordem:', error);
+          showToast('Erro ao criar ordem de serviço: ' + error.message, 'Erro', 'danger');
+        }
       });
       
       // Configurar eventos para botões de visualização
       document.querySelectorAll('.btn-view-ordem').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
           const ordemId = btn.getAttribute('data-id');
-          showToast(`Visualizando ordem ${ordemId}`, 'Info', 'info');
+          
+          try {
+            // Carregar detalhes da ordem
+            const { data: ordem, error } = await supabase
+              .from('ordens_servico')
+              .select(`
+                id,
+                data_criacao,
+                data_conclusao,
+                status,
+                descricao_problema,
+                solucao_aplicada,
+                valor_total,
+                forma_pagamento,
+                garantia_ate,
+                clientes(id, nome, telefone, email),
+                itens_ordem_servico(id, servico_id, quantidade, valor_unitario, servicos(nome))
+              `)
+              .eq('id', ordemId)
+              .single();
+            
+            if (error) throw error;
+            
+            // Preencher o modal com os dados da ordem
+            document.getElementById('visualizar-ordem-content').innerHTML = `
+              <div class="row">
+                <div class="col-md-6">
+                  <h6>Informações da Ordem</h6>
+                  <p><strong>Número:</strong> OS-${ordem.id.toString().padStart(6, '0')}</p>
+                  <p><strong>Data de Criação:</strong> ${formatDate(ordem.data_criacao)}</p>
+                  <p><strong>Status:</strong> <span class="badge ${getStatusBadgeClass(ordem.status)}">${formatStatus(ordem.status)}</span></p>
+                  <p><strong>Valor Total:</strong> ${formatCurrency(ordem.valor_total || 0)}</p>
+                  ${ordem.data_conclusao ? `<p><strong>Data de Conclusão:</strong> ${formatDate(ordem.data_conclusao)}</p>` : ''}
+                  ${ordem.garantia_ate ? `<p><strong>Garantia até:</strong> ${formatDate(ordem.garantia_ate)}</p>` : ''}
+                </div>
+                <div class="col-md-6">
+                  <h6>Dados do Cliente</h6>
+                  <p><strong>Nome:</strong> ${ordem.clientes.nome}</p>
+                  <p><strong>Telefone:</strong> ${ordem.clientes.telefone || '-'}</p>
+                  <p><strong>Email:</strong> ${ordem.clientes.email || '-'}</p>
+                </div>
+              </div>
+              <hr>
+              <div class="row">
+                <div class="col-md-12">
+                  <h6>Problema Relatado</h6>
+                  <p>${ordem.descricao_problema || '-'}</p>
+                  
+                  ${ordem.solucao_aplicada ? `
+                  <h6 class="mt-3">Solução Aplicada</h6>
+                  <p>${ordem.solucao_aplicada}</p>
+                  ` : ''}
+                </div>
+              </div>
+              <hr>
+              <h6>Serviços</h6>
+              <div class="table-responsive">
+                <table class="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>Serviço</th>
+                      <th>Qtd</th>
+                      <th>Valor Unit.</th>
+                      <th>Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${ordem.itens_ordem_servico.map(item => `
+                      <tr>
+                        <td>${item.servicos.nome}</td>
+                        <td>${item.quantidade}</td>
+                        <td>${formatCurrency(item.valor_unitario)}</td>
+                        <td>${formatCurrency(item.quantidade * item.valor_unitario)}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th colspan="3" class="text-end">Total:</th>
+                      <th>${formatCurrency(ordem.valor_total || 0)}</th>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+              
+              ${ordem.status !== 'concluido' && ordem.status !== 'cancelado' ? `
+              <hr>
+              <h6>Concluir Ordem</h6>
+              <div class="mb-3">
+                <label for="ordem-solucao" class="form-label">Solução Aplicada</label>
+                <textarea class="form-control" id="ordem-solucao" rows="3"></textarea>
+              </div>
+              ` : ''}
+            `;
+            
+            // Mostrar modal
+            modalVisualizarOrdem.show();
+            
+            // Configurar botões de ação baseados no status atual
+            const btnConcluir = document.getElementById('btn-concluir-ordem');
+            const btnCancelar = document.getElementById('btn-cancelar-ordem');
+            
+            if (ordem.status === 'concluido' || ordem.status === 'cancelado') {
+              btnConcluir.style.display = 'none';
+              btnCancelar.style.display = 'none';
+            } else {
+              btnConcluir.style.display = '';
+              btnCancelar.style.display = '';
+              
+              // Evento para concluir a ordem
+              btnConcluir.onclick = async () => {
+                const solucao = document.getElementById('ordem-solucao').value.trim();
+                
+                if (!solucao) {
+                  alert('Por favor, informe a solução aplicada para concluir a ordem.');
+                  return;
+                }
+                
+                if (confirm('Confirma a conclusão desta ordem de serviço?')) {
+                  try {
+                    const hoje = new Date();
+                    
+                    // Calcular data de garantia baseada nos serviços
+                    let diasGarantia = 0;
+                    ordem.itens_ordem_servico.forEach(item => {
+                      if (item.servicos.tempo_garantia_dias > diasGarantia) {
+                        diasGarantia = item.servicos.tempo_garantia_dias;
+                      }
+                    });
+                    
+                    const dataGarantia = new Date(hoje);
+                    dataGarantia.setDate(dataGarantia.getDate() + diasGarantia);
+                    
+                    // Atualizar ordem
+                    const { error } = await supabase
+                      .from('ordens_servico')
+                      .update({
+                        status: 'concluido',
+                        data_conclusao: hoje.toISOString(),
+                        solucao_aplicada: solucao,
+                        garantia_ate: dataGarantia.toISOString()
+                      })
+                      .eq('id', ordem.id);
+                    
+                    if (error) throw error;
+                    
+                    // Registrar no financeiro
+                    const { error: finError } = await supabase
+                      .from('financeiro')
+                      .insert([
+                        {
+                          data: hoje.toISOString(),
+                          tipo: 'receita',
+                          categoria: 'Serviços',
+                          descricao: `Ordem de Serviço #${ordem.id}`,
+                          valor: ordem.valor_total,
+                          ordem_servico_id: ordem.id
+                        }
+                      ]);
+                    
+                    if (finError) throw finError;
+                    
+                    modalVisualizarOrdem.hide();
+                    showToast('Ordem concluída com sucesso!', 'Sucesso', 'success');
+                    loadOrdens(); // Recarregar a lista
+                    
+                  } catch (error) {
+                    console.error('Erro ao concluir ordem:', error);
+                    alert(`Erro ao concluir a ordem: ${error.message}`);
+                  }
+                }
+              };
+              
+              // Evento para cancelar a ordem
+              btnCancelar.onclick = async () => {
+                if (confirm('Tem certeza que deseja cancelar esta ordem de serviço? Esta ação não pode ser desfeita.')) {
+                  try {
+                    const { error } = await supabase
+                      .from('ordens_servico')
+                      .update({ status: 'cancelado' })
+                      .eq('id', ordem.id);
+                    
+                    if (error) throw error;
+                    
+                    modalVisualizarOrdem.hide();
+                    showToast('Ordem cancelada com sucesso!', 'Atenção', 'warning');
+                    loadOrdens(); // Recarregar a lista
+                    
+                  } catch (error) {
+                    console.error('Erro ao cancelar ordem:', error);
+                    alert(`Erro ao cancelar a ordem: ${error.message}`);
+                  }
+                }
+              };
+            }
+            
+          } catch (error) {
+            console.error('Erro ao carregar detalhes da ordem:', error);
+            showToast('Erro ao carregar detalhes da ordem: ' + error.message, 'Erro', 'danger');
+          }
         });
+      });
+      
+      // Chamar configurarEventosServicos para os eventos iniciais
+      configurarEventosServicos();
+      
+      // Configurar evento para o botão filtrar
+      document.getElementById('btn-filtrar').addEventListener('click', async () => {
+        const status = document.getElementById('filtro-status').value;
+        const cliente = document.getElementById('filtro-cliente').value.trim().toLowerCase();
+        const data = document.getElementById('filtro-data').value;
+        
+        try {
+          let query = supabase
+            .from('ordens_servico')
+            .select(`
+              id,
+              data_criacao,
+              data_conclusao,
+              status,
+              valor_total,
+              clientes(id, nome),
+              itens_ordem_servico(servico_id, servicos(nome))
+            `);
+          
+          // Aplicar filtros
+          if (status) {
+            query = query.eq('status', status);
+          }
+          
+          if (data) {
+            const dataFiltro = new Date(data);
+            const dataInicio = new Date(dataFiltro);
+            dataInicio.setHours(0, 0, 0, 0);
+            
+            const dataFim = new Date(dataFiltro);
+            dataFim.setHours(23, 59, 59, 999);
+            
+            query = query.gte('data_criacao', dataInicio.toISOString())
+                         .lte('data_criacao', dataFim.toISOString());
+          }
+          
+          // Obter resultados
+          let { data: ordensFiltradas, error } = await query.order('data_criacao', { ascending: false });
+          
+          if (error) throw error;
+          
+          // Filtrar por cliente se necessário
+          if (cliente) {
+            ordensFiltradas = ordensFiltradas.filter(ordem => 
+              ordem.clientes && ordem.clientes.nome.toLowerCase().includes(cliente)
+            );
+          }
+          
+          // Atualizar tabela
+          document.getElementById('tabela-ordens').innerHTML = gerarLinhasOrdens(ordensFiltradas);
+          document.querySelector('.card-footer .text-muted').textContent = 
+            `Total: ${ordensFiltradas.length} ordem(ns)`;
+            
+          // Reconfigurar eventos para os botões
+          document.querySelectorAll('.btn-view-ordem').forEach(btn => {
+            btn.addEventListener('click', function() {
+              const ordemId = this.getAttribute('data-id');
+              document.querySelector(`.btn-view-ordem[data-id="${ordemId}"]`).click();
+            });
+          });
+          
+        } catch (error) {
+          console.error('Erro ao aplicar filtros:', error);
+          showToast('Erro ao filtrar ordens: ' + error.message, 'Erro', 'danger');
+        }
       });
       
     } catch (error) {
@@ -956,7 +1655,7 @@ document.getElementById('btn-novo-servico').addEventListener('click', () => {
           <h1 class="h2">Garantias</h1>
           <div class="btn-toolbar mb-2 mb-md-0">
             <div class="btn-group me-2">
-              <button type="button" class="btn btn-sm btn-outline-secondary">
+              <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-export-garantias">
                 <i class="fas fa-download"></i> Exportar
               </button>
             </div>
@@ -999,6 +1698,95 @@ document.getElementById('btn-novo-servico').addEventListener('click', () => {
           </div>
         </div>
       `;
+      
+      // Configurar eventos para botões
+      document.querySelectorAll('.btn-view-garantia').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const ordemId = btn.getAttribute('data-id');
+          
+          // Redirecionar para a visualização da ordem
+          document.getElementById('ordens-link').click();
+          setTimeout(() => {
+            const btnViewOrdem = document.querySelector(`.btn-view-ordem[data-id="${ordemId}"]`);
+            if (btnViewOrdem) btnViewOrdem.click();
+          }, 500);
+        });
+      });
+      
+      document.querySelectorAll('.btn-acionar-garantia').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const ordemId = btn.getAttribute('data-id');
+          
+          if (confirm('Deseja acionar a garantia para esta ordem de serviço?')) {
+            try {
+              // Verificar se existe uma ordem de garantia aberta para esta ordem
+              const { data: ordensGarantia, error: checkError } = await supabase
+                .from('ordens_servico')
+                .select('id')
+                .eq('ordem_garantia_de', ordemId)
+                .not('status', 'eq', 'cancelado');
+              
+              if (checkError) throw checkError;
+              
+              if (ordensGarantia && ordensGarantia.length > 0) {
+                alert('Já existe uma ordem de garantia aberta para esta ordem de serviço.');
+                return;
+              }
+              
+              // Buscar dados da ordem original
+              const { data: ordemOriginal, error: ordemError } = await supabase
+                .from('ordens_servico')
+                .select(`
+                  cliente_id,
+                  descricao_problema,
+                  itens_ordem_servico(servico_id, quantidade, valor_unitario)
+                `)
+                .eq('id', ordemId)
+                .single();
+              
+              if (ordemError) throw ordemError;
+              
+              // Criar nova ordem de garantia
+              const { data: novaOrdem, error: novaOrdemError } = await supabase
+                .from('ordens_servico')
+                .insert([{
+                  cliente_id: ordemOriginal.cliente_id,
+                  descricao_problema: `GARANTIA - ${ordemOriginal.descricao_problema}`,
+                  status: 'pendente',
+                  valor_total: 0, // Garantia não tem custo
+                  ordem_garantia_de: ordemId,
+                  data_criacao: new Date().toISOString()
+                }])
+                .select();
+              
+              if (novaOrdemError) throw novaOrdemError;
+              
+              // Adicionar os mesmos itens, mas com valor zero
+              const itensGarantia = ordemOriginal.itens_ordem_servico.map(item => ({
+                ordem_servico_id: novaOrdem[0].id,
+                servico_id: item.servico_id,
+                quantidade: item.quantidade,
+                valor_unitario: 0 // Na garantia, valor é zero
+              }));
+              
+              const { error: itensError } = await supabase
+                .from('itens_ordem_servico')
+                .insert(itensGarantia);
+              
+              if (itensError) throw itensError;
+              
+              showToast('Garantia acionada com sucesso! Uma nova ordem foi criada.', 'Sucesso', 'success');
+              
+              // Redirecionar para a lista de ordens
+              document.getElementById('ordens-link').click();
+              
+            } catch (error) {
+              console.error('Erro ao acionar garantia:', error);
+              showToast('Erro ao acionar garantia: ' + error.message, 'Erro', 'danger');
+            }
+          }
+        });
+      });
       
     } catch (error) {
       console.error('Erro ao carregar garantias:', error);
@@ -1113,7 +1901,7 @@ document.getElementById('btn-novo-servico').addEventListener('click', () => {
         <!-- Resumo Financeiro -->
         <div class="row mb-4">
           <div class="col-md-4">
-<div class="card card-stats card-receitas shadow-sm">
+            <div class="card card-stats card-receitas shadow-sm">
               <div class="card-body">
                 <h5 class="card-title text-muted">Receitas do Mês</h5>
                 <h3 class="mb-0">${formatCurrency(resumoFinanceiro ? resumoFinanceiro.receitas : 0)}</h3>
@@ -1272,126 +2060,124 @@ document.getElementById('btn-novo-servico').addEventListener('click', () => {
       let ordemCliente = '-';
       if (mov.ordem_servico_id && mov.ordens_servico && mov.ordens_servico.clientes) {
         ordemCliente = `OS-${mov.ordem_servico_id.toString().padStart(6, '0')} / ${mov.ordens_servico.clientes.nome}`;
-      }
-      
-      return `
-        <tr>
-          <td>${dataFormatada}</td>
-          <td class="${classeValor}">${tipoFormatado}</td>
-          <td>${mov.categoria || '-'}</td>
-          <td>${mov.descricao || '-'}</td>
-          <td>${ordemCliente}</td>
-          <td class="${classeValor}">${formatCurrency(mov.valor || 0)}</td>
-          <td>
-            <button class="btn btn-sm btn-outline-secondary btn-view-movimentacao" data-id="${mov.id}" data-bs-toggle="tooltip" title="Visualizar">
-              <i class="fas fa-eye"></i>
-            </button>
-            <button class="btn btn-sm btn-outline-primary btn-edit-movimentacao" data-id="${mov.id}" data-bs-toggle="tooltip" title="Editar">
-              <i class="fas fa-edit"></i>
-            </button>
-          </td>
-        </tr>
-      `;
-    }).join('');
-  }
+      }return `
+      <tr>
+        <td>${dataFormatada}</td>
+        <td class="${classeValor}">${tipoFormatado}</td>
+        <td>${mov.categoria || '-'}</td>
+        <td>${mov.descricao || '-'}</td>
+        <td>${ordemCliente}</td>
+        <td class="${classeValor}">${formatCurrency(mov.valor || 0)}</td>
+        <td>
+          <button class="btn btn-sm btn-outline-secondary btn-view-movimentacao" data-id="${mov.id}" data-bs-toggle="tooltip" title="Visualizar">
+            <i class="fas fa-eye"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-primary btn-edit-movimentacao" data-id="${mov.id}" data-bs-toggle="tooltip" title="Editar">
+            <i class="fas fa-edit"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
 
-  // Inicializar gráfico financeiro
-  async function inicializarGraficoFinanceiro() {
-    try {
-      // Obter dados financeiros dos últimos 6 meses
-      const dataAtual = new Date();
-      const dadosReceitas = [];
-      const dadosDespesas = [];
-      const labels = [];
+// Inicializar gráfico financeiro
+async function inicializarGraficoFinanceiro() {
+  try {
+    // Obter dados financeiros dos últimos 6 meses
+    const dataAtual = new Date();
+    const dadosReceitas = [];
+    const dadosDespesas = [];
+    const labels = [];
+    
+    for (let i = 5; i >= 0; i--) {
+      const mes = new Date(dataAtual.getFullYear(), dataAtual.getMonth() - i, 1);
+      const inicioPeriodo = new Date(mes.getFullYear(), mes.getMonth(), 1).toISOString();
+      const fimPeriodo = new Date(mes.getFullYear(), mes.getMonth() + 1, 0).toISOString();
       
-      for (let i = 5; i >= 0; i--) {
-        const mes = new Date(dataAtual.getFullYear(), dataAtual.getMonth() - i, 1);
-        const inicioPeriodo = new Date(mes.getFullYear(), mes.getMonth(), 1).toISOString();
-        const fimPeriodo = new Date(mes.getFullYear(), mes.getMonth() + 1, 0).toISOString();
-        
-        // Obter receitas e despesas do mês
-        const { data: receitas, error: receitasError } = await supabase
-          .from('financeiro')
-          .select('valor')
-          .eq('tipo', 'receita')
-          .gte('data', inicioPeriodo)
-          .lte('data', fimPeriodo);
-        
-        const { data: despesas, error: despesasError } = await supabase
-          .from('financeiro')
-          .select('valor')
-          .eq('tipo', 'despesa')
-          .gte('data', inicioPeriodo)
-          .lte('data', fimPeriodo);
-        
-        if (receitasError) throw receitasError;
-        if (despesasError) throw despesasError;
-        
-        // Somar valores
-        const totalReceitas = receitas ? receitas.reduce((sum, item) => sum + (item.valor || 0), 0) : 0;
-        const totalDespesas = despesas ? despesas.reduce((sum, item) => sum + (item.valor || 0), 0) : 0;
-        
-        // Formatar nome do mês
-        const nomeMes = mes.toLocaleDateString('pt-BR', { month: 'short' });
-        
-        labels.push(nomeMes);
-        dadosReceitas.push(totalReceitas);
-        dadosDespesas.push(totalDespesas);
-      }
+      // Obter receitas e despesas do mês
+      const { data: receitas, error: receitasError } = await supabase
+        .from('financeiro')
+        .select('valor')
+        .eq('tipo', 'receita')
+        .gte('data', inicioPeriodo)
+        .lte('data', fimPeriodo);
       
-      // Criar gráfico
-      const ctx = document.getElementById('grafico-financeiro').getContext('2d');
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [
-            {
-              label: 'Receitas (R$)',
-              data: dadosReceitas,
-              backgroundColor: 'rgba(76, 201, 240, 0.7)',
-              borderColor: 'rgba(76, 201, 240, 1)',
-              borderWidth: 1
-            },
-            {
-              label: 'Despesas (R$)',
-              data: dadosDespesas,
-              backgroundColor: 'rgba(247, 37, 133, 0.7)',
-              borderColor: 'rgba(247, 37, 133, 1)',
-              borderWidth: 1
-            }
-          ]
-        },
-        options: {
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: {
-                callback: function(value) {
-                  return 'R$ ' + value.toFixed(2);
-                }
+      const { data: despesas, error: despesasError } = await supabase
+        .from('financeiro')
+        .select('valor')
+        .eq('tipo', 'despesa')
+        .gte('data', inicioPeriodo)
+        .lte('data', fimPeriodo);
+      
+      if (receitasError) throw receitasError;
+      if (despesasError) throw despesasError;
+      
+      // Somar valores
+      const totalReceitas = receitas ? receitas.reduce((sum, item) => sum + (item.valor || 0), 0) : 0;
+      const totalDespesas = despesas ? despesas.reduce((sum, item) => sum + (item.valor || 0), 0) : 0;
+      
+      // Formatar nome do mês
+      const nomeMes = mes.toLocaleDateString('pt-BR', { month: 'short' });
+      
+      labels.push(nomeMes);
+      dadosReceitas.push(totalReceitas);
+      dadosDespesas.push(totalDespesas);
+    }
+    
+    // Criar gráfico
+    const ctx = document.getElementById('grafico-financeiro').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Receitas (R$)',
+            data: dadosReceitas,
+            backgroundColor: 'rgba(76, 201, 240, 0.7)',
+            borderColor: 'rgba(76, 201, 240, 1)',
+            borderWidth: 1
+          },
+          {
+            label: 'Despesas (R$)',
+            data: dadosDespesas,
+            backgroundColor: 'rgba(247, 37, 133, 0.7)',
+            borderColor: 'rgba(247, 37, 133, 1)',
+            borderWidth: 1
+          }
+        ]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) {
+                return 'R$ ' + value.toFixed(2);
               }
             }
-          },
-          plugins: {
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  return 'R$ ' + context.raw.toFixed(2);
-                }
+          }
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return 'R$ ' + context.raw.toFixed(2);
               }
             }
           }
         }
-      });
-      
-    } catch (error) {
-      console.error('Erro ao inicializar gráfico financeiro:', error);
-      document.getElementById('grafico-financeiro').parentNode.innerHTML = `
-        <div class="alert alert-warning">
-          Não foi possível carregar o gráfico financeiro.
-        </div>
-      `;
-    }
+      }
+    });
+    
+  } catch (error) {
+    console.error('Erro ao inicializar gráfico financeiro:', error);
+    document.getElementById('grafico-financeiro').parentNode.innerHTML = `
+      <div class="alert alert-warning">
+        Não foi possível carregar o gráfico financeiro.
+      </div>
+    `;
   }
+}
 });

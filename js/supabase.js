@@ -46,6 +46,28 @@ async function addCliente(cliente) {
   return data[0]
 }
 
+// Função para adicionar serviço - Movida para antes da exportação
+async function addServico(servico) {
+  const { data, error } = await supabase
+    .from('servicos')
+    .insert([
+      { 
+        nome: servico.nome,
+        descricao: servico.descricao,
+        preco_padrao: servico.preco_padrao,
+        tempo_garantia_dias: servico.tempo_garantia_dias
+      }
+    ])
+    .select();
+  
+  if (error) {
+    console.error('Erro ao adicionar serviço:', error);
+    return null;
+  }
+  
+  return data[0];
+}
+
 // Funções para manipulação de ordens de serviço
 async function createOrdemServico(ordem) {
   const { data, error } = await supabase
@@ -88,6 +110,55 @@ async function createOrdemServico(ordem) {
   return data[0]
 }
 
+// Funções para manipulação de serviços
+async function getServicos() {
+  const { data, error } = await supabase
+    .from('servicos')
+    .select('*')
+    .order('nome')
+  
+  if (error) {
+    console.error('Erro ao buscar serviços:', error)
+    return []
+  }
+  
+  return data
+}
+
+async function updateServico(id, servico) {
+  const { data, error } = await supabase
+    .from('servicos')
+    .update({
+      nome: servico.nome,
+      descricao: servico.descricao,
+      preco_padrao: servico.preco_padrao,
+      tempo_garantia_dias: servico.tempo_garantia_dias
+    })
+    .eq('id', id)
+    .select()
+  
+  if (error) {
+    console.error('Erro ao atualizar serviço:', error)
+    return null
+  }
+  
+  return data[0]
+}
+
+async function deleteServico(id) {
+  const { error } = await supabase
+    .from('servicos')
+    .delete()
+    .eq('id', id)
+  
+  if (error) {
+    console.error('Erro ao excluir serviço:', error)
+    return false
+  }
+  
+  return true
+}
+
 // Funções para relatórios financeiros
 async function getResumoFinanceiro(mesAno) {
   const inicio = new Date(mesAno.ano, mesAno.mes - 1, 1).toISOString()
@@ -126,27 +197,8 @@ export {
   addCliente,
   createOrdemServico,
   getResumoFinanceiro,
-  addServico
+  addServico,
+  getServicos,
+  updateServico,
+  deleteServico
 };
-
-// Adicione esta função ao arquivo supabase.js
-async function addServico(servico) {
-  const { data, error } = await supabase
-    .from('servicos')
-    .insert([
-      { 
-        nome: servico.nome,
-        descricao: servico.descricao,
-        preco_padrao: servico.preco_padrao,
-        tempo_garantia_dias: servico.tempo_garantia_dias
-      }
-    ])
-    .select();
-  
-  if (error) {
-    console.error('Erro ao adicionar serviço:', error);
-    return null;
-  }
-  
-  return data[0];
-}
