@@ -220,23 +220,70 @@ document.getElementById('btn-salvar-servico').addEventListener('click', async ()
       </script>
       <script>
         // Menu mobile toggle
-        document.addEventListener('DOMContentLoaded', function() {
-          const menuToggle = document.querySelector('.mobile-menu-toggle');
-          const sidebar = document.querySelector('.sidebar');
-          const overlay = document.querySelector('.sidebar-overlay');
+        document.addEventListener("DOMContentLoaded", function() {
+          const loginForm = document.getElementById('login-form'); // Ajuste para o ID do seu formulário
           
-          if (menuToggle && sidebar && overlay) {
-            menuToggle.addEventListener('click', function() {
-              sidebar.classList.toggle('show');
-              overlay.classList.toggle('show');
-            });
+          loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
             
-            overlay.addEventListener('click', function() {
-              sidebar.classList.remove('show');
-              overlay.classList.remove('show');
-            });
-          }
+            const username = document.getElementById('username').value.trim(); // Ajuste para o ID do seu campo
+            const password = document.getElementById('password').value.trim(); // Ajuste para o ID do seu campo
+            
+            try {
+              // Realizar a autenticação no Supabase
+              const { data, error } = await supabaseClient
+                .from('usuarios')
+                .select('*')
+                .eq('username', username)
+                .eq('password', password)
+                .single();
+              
+              if (error) throw error;
+              
+              if (data) {
+                // Registrar usuário no sessionStorage
+                sessionStorage.setItem('authenticated', 'true');
+                sessionStorage.setItem('username', username);
+                sessionStorage.setItem('user_id', data.id);
+                sessionStorage.setItem('user_role', data.cargo);
+                
+                console.log('Login bem-sucedido:', {
+                  authenticated: true,
+                  username: username,
+                  user_id: data.id,
+                  user_role: data.cargo
+                });
+                
+                // Redirecionar para o painel
+                window.location.href = 'painel.html';
+              } else {
+                alert('Nome de usuário ou senha incorretos.');
+              }
+            } catch (error) {
+              console.error('Erro no login:', error);
+              alert('Erro ao tentar fazer login. Tente novamente.');
+            }
+          });
+          
+          // Limpar dados de autenticação ao carregar a página de login
+          sessionStorage.removeItem('authenticated');
+          sessionStorage.removeItem('username');
+          sessionStorage.removeItem('user_id');
+          sessionStorage.removeItem('user_role');
         });
+        
+        // Para depuração: Adicione este código temporariamente para ver o estado da sessão
+        // Adicione em um botão ou link na página de login para teste
+        function verificarSessao() {
+          console.log({
+            authenticated: sessionStorage.getItem('authenticated'),
+            username: sessionStorage.getItem('username'),
+            user_id: sessionStorage.getItem('user_id'),
+            user_role: sessionStorage.getItem('user_role')
+          });
+          
+          alert('Verifique o console para ver os dados da sessão');
+        }
       </script>
   </body>
 </html>

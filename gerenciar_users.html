@@ -961,53 +961,48 @@
         }
 
        // Abrir modal de edição de usuário
-async function openEditUserModal(userId) {
-  try {
-    // Buscar dados do usuário - corrigido para usar supabaseClient
-    const { data: user, error } = await supabaseClient
-      .from("usuarios")
-      .select("*")
-      .eq("id", userId)
-      .single();
-
-    if (error) throw error;
-
-    if (!user) {
-      alert("Usuário não encontrado.");
-      return;
-    }
-
-    // Preencher o formulário com os dados do usuário
-    document.getElementById("edit-user-id").value = user.id;
-    document.getElementById("edit-username").value = user.username;
-    document.getElementById("edit-password").value = "";
-    document.getElementById("edit-fullname").value =
-      user.nome_completo || "";
-    document.getElementById("edit-role").value = user.cargo || "";
-    document.getElementById("edit-temp-user").checked =
-      user.is_temporario;
-
-    // Configurar campo de data de expiração
-    const expirationGroup = document.getElementById(
-      "edit-expiration-group"
-    );
-    if (user.is_temporario) {
-      expirationGroup.classList.remove("d-none");
-      editExpirationDatePicker.setDate(user.data_expiracao);
-    } else {
-      expirationGroup.classList.add("d-none");
-      editExpirationDatePicker.clear();
-    }
-
-    // Abrir o modal
-    editUserModal.show();
-  } catch (error) {
-    console.error("Erro ao buscar dados do usuário:", error);
-    alert(
-      "Erro ao buscar dados do usuário. Tente novamente mais tarde."
-    );
-  }
-}
+       async function openEditUserModal(userId) {
+        try {
+          // Buscar dados do usuário - corrigido para usar supabaseClient consistentemente
+          const { data: user, error } = await supabaseClient
+            .from("usuarios")
+            .select("*")
+            .eq("id", userId)
+            .single();
+      
+          if (error) throw error;
+      
+          if (!user) {
+            alert("Usuário não encontrado.");
+            return;
+          }
+      
+          // Preencher o formulário com os dados do usuário
+          document.getElementById("edit-user-id").value = user.id;
+          document.getElementById("edit-username").value = user.username;
+          document.getElementById("edit-password").value = "";
+          document.getElementById("edit-fullname").value = user.nome_completo || "";
+          document.getElementById("edit-role").value = user.cargo || "";
+          document.getElementById("edit-temp-user").checked = user.is_temporario;
+      
+          // Configurar campo de data de expiração
+          const expirationGroup = document.getElementById("edit-expiration-group");
+          if (user.is_temporario) {
+            expirationGroup.classList.remove("d-none");
+            editExpirationDatePicker.setDate(user.data_expiracao);
+          } else {
+            expirationGroup.classList.add("d-none");
+            editExpirationDatePicker.clear();
+          }
+      
+          // Abrir o modal
+          editUserModal.show();
+        } catch (error) {
+          console.error("Erro ao buscar dados do usuário:", error);
+          alert("Erro ao buscar dados do usuário. Tente novamente mais tarde.");
+        }
+      }
+      
 
 // Salvar novo usuário
 async function saveNewUser(userData) {
@@ -1076,18 +1071,18 @@ async function updateUser(userId, userData) {
         // Excluir usuário
         async function deleteUser(userId) {
           if (!confirm("Tem certeza que deseja excluir este usuário?")) return;
-
+        
           try {
-            const { error } = await supabase
+            const { error } = await supabaseClient
               .from("usuarios")
               .delete()
               .eq("id", userId);
-
+        
             if (error) throw error;
-
+        
             // Recarregar usuários
             loadUsers();
-
+        
             // Mostrar mensagem de sucesso
             showAlert("Usuário excluído com sucesso!", "success");
           } catch (error) {
@@ -1281,52 +1276,78 @@ async function updateUser(userId, userData) {
         async function checkExpiredUsers() {
           try {
             const currentDate = new Date().toISOString();
-
+        
             // Buscar usuários expirados
-            const { data: expiredUsers, error } = await supabase
+            const { data: expiredUsers, error } = await supabaseClient
               .from("usuarios")
               .select("id, username")
               .eq("is_temporario", true)
               .lt("data_expiracao", currentDate);
-
+        
             if (error) throw error;
-
+        
             if (expiredUsers && expiredUsers.length > 0) {
-              console.log(
-                `Encontrados ${expiredUsers.length} usuários expirados.`
-              );
-
+              console.log(`Encontrados ${expiredUsers.length} usuários expirados.`);
+        
               // Remover usuários expirados
               const expiredIds = expiredUsers.map((user) => user.id);
-
-              const { error: deleteError } = await supabase
+        
+              const { error: deleteError } = await supabaseClient
                 .from("usuarios")
                 .delete()
                 .in("id", expiredIds);
-
+        
               if (deleteError) throw deleteError;
-
-              console.log(
-                `${expiredUsers.length} usuários expirados foram removidos.`
-              );
-
+        
+              console.log(`${expiredUsers.length} usuários expirados foram removidos.`);
+        
               // Mostrar mensagem informativa se usuários foram removidos durante a navegação
               if (document.visibilityState === "visible") {
-                const usernames = expiredUsers
-                  .map((user) => user.username)
-                  .join(", ");
+                const usernames = expiredUsers.map((user) => user.username).join(", ");
                 showAlert(
                   `${expiredUsers.length} usuários expirados foram removidos: ${usernames}`,
                   "success"
                 );
               }
-
+        
               // Recarregar lista de usuários
               loadUsers();
             }
           } catch (error) {
             console.error("Erro ao verificar usuários expirados:", error);
           }
+        }
+        function checkAuth() {
+          const isAuthenticated = sessionStorage.getItem("authenticated");
+          const username = sessionStorage.getItem("username");
+        
+          console.log("Verificando autenticação:", { isAuthenticated, username });
+        
+          if (!isAuthenticated || !username) {
+            window.location.href = "index.html";
+            return false;
+          }
+        
+          // Exibir nome do usuário
+          usernameDisplay.textContent = username;
+          currentUser = username;
+        
+          // Verificar se o usuário tem permissão para adicionar usuários
+          if (username !== "kauanlauer") {
+            console.log("Usuário não autorizado:", username);
+            addUserBtn.disabled = true;
+            addUserBtn.classList.add("d-none");
+            authAlert.classList.remove("d-none");
+            isAuthorized = false;
+          } else {
+            console.log("Usuário autorizado:", username);
+            addUserBtn.disabled = false;
+            addUserBtn.classList.remove("d-none");
+            authAlert.classList.add("d-none");
+            isAuthorized = true;
+          }
+        
+          return true;
         }
       });
     </script>

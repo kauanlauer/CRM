@@ -546,26 +546,33 @@
         // Cadastrar novo usuário
         async function saveUser(userData) {
           try {
-            // Usar o método RPC para contornar as políticas de segurança RLS
+            // Usar o método rpc para contornar as políticas de segurança RLS
             const { data, error } = await supabaseClient
-              .rpc('insert_usuario', userData);
-      
+              .rpc('insert_usuario', {
+                p_username: userData.username,
+                p_password: userData.password,
+                p_nome_completo: userData.nome_completo,
+                p_cargo: userData.cargo,
+                p_is_temporario: userData.is_temporario,
+                p_data_expiracao: userData.data_expiracao
+              });
+        
             if (error) throw error;
-      
+        
             // Resetar formulário
             userForm.reset();
             expirationGroup.classList.add("d-none");
-      
+        
             // Mostrar mensagem de sucesso
             showAlert("Usuário cadastrado com sucesso!", "success");
-      
+        
             // Recarregar usuários
             loadUsers();
-      
+        
             return true;
           } catch (error) {
             console.error("Erro ao cadastrar usuário:", error);
-      
+        
             if (error.code === "23505") {
               showAlert(
                 "Nome de usuário já existe. Por favor, escolha outro nome de usuário.",
@@ -574,7 +581,7 @@
             } else {
               showAlert("Erro ao cadastrar usuário: " + error.message, "error");
             }
-      
+        
             return false;
           }
         }
@@ -582,13 +589,15 @@
         // Excluir usuário
         async function deleteUser(userId) {
           if (!confirm("Tem certeza que deseja excluir este usuário?")) return;
-      
+        
           try {
             const { error } = await supabaseClient
-              .rpc('delete_usuario', { user_id: userId });
-      
+              .rpc('delete_usuario', { 
+                p_user_id: userId 
+              });
+        
             if (error) throw error;
-      
+        
             showAlert("Usuário excluído com sucesso!", "success");
             loadUsers();
           } catch (error) {
@@ -596,6 +605,7 @@
             showAlert("Erro ao excluir usuário: " + error.message, "error");
           }
         }
+        
       
         // Mostrar alerta
         function showAlert(message, type) {
@@ -744,43 +754,143 @@
         checkAuth();
       
         // Verificar e remover usuários expirados
-        async function checkExpiredUsers() {
-          if (!isAuthorized) return;
-      
-          try {
-            const currentDate = new Date().toISOString();
-      
-            const { data: expiredUsers, error } = await supabaseClient
-              .rpc('get_expired_users', { current_date: currentDate });
-      
-            if (error) throw error;
-      
-            if (expiredUsers && expiredUsers.length > 0) {
-              console.log(
-                `Encontrados ${expiredUsers.length} usuários expirados para remoção.`
-              );
-      
-              // Remover usuários expirados usando stored procedure
-              const { error: deleteError } = await supabaseClient
-                .rpc('remove_expired_users', { current_date: currentDate });
-      
-              if (deleteError) throw deleteError;
-      
-              console.log(
-                `${expiredUsers.length} usuários expirados foram removidos.`
-              );
-      
-              showAlert(
-                `${expiredUsers.length} usuários temporários expirados foram removidos automaticamente.`,
-                "success"
-              );
-              loadUsers();
-            }
-          } catch (error) {
-            console.error("Erro ao verificar usuários expirados:", error);
-          }
-        }
-      
+       // Corrigir a função saveUser - problema na passagem de parâmetros para o RPC
+async function saveUser(userData) {
+  try {
+    // Usar o método rpc para contornar as políticas de segurança RLS
+    const { data, error } = await supabaseClient
+      .rpc('insert_usuario', {
+        p_username: userData.username,
+        p_password: userData.password,
+        p_nome_completo: userData.nome_completo,
+        p_cargo: userData.cargo,
+        p_is_temporario: userData.is_temporario,
+        p_data_expiracao: userData.data_expiracao
+      });
+
+    if (error) throw error;
+
+    // Resetar formulário
+    userForm.reset();
+    expirationGroup.classList.add("d-none");
+
+    // Mostrar mensagem de sucesso
+    showAlert("Usuário cadastrado com sucesso!", "success");
+
+    // Recarregar usuários
+    loadUsers();
+
+    return true;
+  } catch (error) {
+    console.error("Erro ao cadastrar usuário:", error);
+
+    if (error.code === "23505") {
+      showAlert(
+        "Nome de usuário já existe. Por favor, escolha outro nome de usuário.",
+        "error"
+      );
+    } else {
+      showAlert("Erro ao cadastrar usuário: " + error.message, "error");
+    }
+
+    return false;
+  }
+}
+
+// Corrigir a função deleteUser - problema na passagem de parâmetros para o RPC
+async function deleteUser(userId) {
+  if (!confirm("Tem certeza que deseja excluir este usuário?")) return;
+
+  try {
+    const { error } = await supabaseClient
+      .rpc('delete_usuario', { 
+        p_user_id: userId 
+      });
+
+    if (error) throw error;
+
+    showAlert("Usuário excluído com sucesso!", "success");
+    loadUsers();
+  } catch (error) {
+    console.error("Erro ao excluir usuário:", error);
+    showAlert("Erro ao excluir usuário: " + error.message, "error");
+  }
+}
+
+// Corrigir a função checkExpiredUsers - problema na passagem de parâmetros para o RPC
+async function checkExpiredUsers() {
+  if (!isAuthorized) return;
+
+  try {
+    const currentDate = new Date().toISOString();
+
+    const { data: expiredUsers, error } = await supabaseClient
+      .rpc('get_expired_users', { 
+        p_current_date: currentDate 
+      });
+
+    if (error) throw error;
+
+    if (expiredUsers && expiredUsers.length > 0) {
+      console.log(
+        `Encontrados ${expiredUsers.length} usuários expirados para remoção.`
+      );
+
+      // Remover usuários expirados usando stored procedure
+      const { error: deleteError } = await supabaseClient
+        .rpc('remove_expired_users', { 
+          p_current_date: currentDate 
+        });
+
+      if (deleteError) throw deleteError;
+
+      console.log(
+        `${expiredUsers.length} usuários expirados foram removidos.`
+      );
+
+      showAlert(
+        `${expiredUsers.length} usuários temporários expirados foram removidos automaticamente.`,
+        "success"
+      );
+      loadUsers();
+    }
+  } catch (error) {
+    console.error("Erro ao verificar usuários expirados:", error);
+  }
+}
+function checkAuth() {
+  const isAuthenticated = sessionStorage.getItem("authenticated");
+  const username = sessionStorage.getItem("username");
+
+  console.log("Verificando autenticação:", { isAuthenticated, username });
+
+  if (!isAuthenticated || !username) {
+    window.location.href = "index.html";
+    return;
+  }
+
+  currentUsername.textContent = username;
+  currentUser = username;
+
+  // Verificar se é o usuário autorizado
+  if (username !== "kauanlauer") {
+    console.log("Usuário não autorizado:", username);
+    authWarning.classList.remove("d-none");
+    saveBtn.disabled = true;
+    userForm.querySelectorAll("input, select").forEach((el) => {
+      el.disabled = true;
+    });
+    isAuthorized = false;
+  } else {
+    console.log("Usuário autorizado:", username);
+    authWarning.classList.add("d-none");
+    saveBtn.disabled = false;
+    isAuthorized = true;
+  }
+
+  // Carregar usuários
+  loadUsers();
+}
         // Verificar usuários expirados na inicialização
         setTimeout(checkExpiredUsers, 1000);
       
