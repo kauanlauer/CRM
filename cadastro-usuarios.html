@@ -282,10 +282,10 @@
   
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Inicialização do cliente Supabase
-      const SUPABASE_URL = 'https://rdhftnrksrawaahoqgpo.supabase.co';
-      const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkaGZ0bnJrc3Jhd2FhaG9xZ3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE5ODA3NDQsImV4cCI6MjA1NzU1Njc0NH0.v7ItKQTkx9TNGoPBIlsgcwYUQ3jA8PlY1SaIj6bH5qA';
-      const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // Inicialização do cliente Supabase
+        const SUPABASE_URL = 'https://rdhftnrksrawaahoqgpo.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkaGZ0bnJrc3Jhd2FhaG9xZ3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE5ODA3NDQsImV4cCI6MjA1NzU1Njc0NH0.v7ItKQTkx9TNGoPBIlsgcwYUQ3jA8PlY1SaIj6bH5qA';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       
       // Elementos do DOM
       const userForm = document.getElementById('user-form');
@@ -352,11 +352,7 @@
       // Carregar usuários
       async function loadUsers() {
         try {
-          const { data: users, error } = await supabase
-            .from('usuarios')
-            .select('*')
-            .order('data_criacao', { ascending: false })
-            .limit(10);
+          const { data: users, error } = await supabaseClient.from('usuarios').select('*');
           
           if (error) throw error;
           
