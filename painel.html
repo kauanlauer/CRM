@@ -4,6 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>KL CRM - Serviços de TI</title>
+    
+    <script>
+      // Verifica autenticação imediatamente
+      if (sessionStorage.getItem('authenticated') !== 'true') {
+        window.location.href = 'index.html';
+      }
+    </script>
 
     <!-- Bootstrap 5 CSS -->
     <link
@@ -178,44 +185,6 @@
       </div>
     </div>
 
-    <!-- Modal de Novo Serviço -->
-<div class="modal fade" id="modalNovoServico" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Novo Serviço</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form id="form-novo-servico">
-          <div class="mb-3">
-            <label for="servico-nome" class="form-label">Nome do Serviço *</label>
-            <input type="text" class="form-control" id="servico-nome" required>
-          </div>
-          <div class="mb-3">
-            <label for="servico-descricao" class="form-label">Descrição</label>
-            <textarea class="form-control" id="servico-descricao" rows="2"></textarea>
-          </div>
-          <div class="mb-3">
-            <label for="servico-preco" class="form-label">Preço Padrão (R$) *</label>
-            <input type="number" class="form-control" id="servico-preco" min="0" step="0.01" required>
-          </div>
-          <div class="mb-3">
-            <label for="servico-garantia" class="form-label">Tempo de Garantia (dias)</label>
-            <input type="number" class="form-control" id="servico-garantia" min="0" value="30">
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" id="btn-salvar-servico">Salvar</button>
-      </div>
-    </div>
-  </div>
-</div>
-`;
-
-
     <!-- Toast para notificações -->
     <div class="toast-container position-fixed bottom-0 end-0 p-3">
       <div id="toast-notification" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
@@ -240,47 +209,5 @@
     <!-- Scripts da aplicação -->
     <script type="module" src="./js/app.js"></script>
     <script type="module" src="./js/scripts.js"></script>
-    // Adicione este script no início do <head> em painel.html
-      <script>
-        // Verifica autenticação imediatamente
-        if (sessionStorage.getItem('authenticated') !== 'true') {
-          window.location.href = 'index.html';
-        }
-
-
-
-        // Adicione este código após inicializar o modal na função loadServicos()
-document.getElementById('btn-salvar-servico').addEventListener('click', async () => {
-  const nome = document.getElementById('servico-nome').value.trim();
-  const descricao = document.getElementById('servico-descricao').value.trim();
-  const preco_padrao = parseFloat(document.getElementById('servico-preco').value);
-  const tempo_garantia_dias = parseInt(document.getElementById('servico-garantia').value);
-  
-  if (!nome || isNaN(preco_padrao)) {
-    alert('Por favor, preencha todos os campos obrigatórios.');
-    return;
-  }
-  
-  try {
-    const novoServico = await addServico({
-      nome,
-      descricao,
-      preco_padrao,
-      tempo_garantia_dias
-    });
-    
-    if (novoServico) {
-      modalNovoServico.hide();
-      showToast('Serviço adicionado com sucesso!', 'Sucesso', 'success');
-      loadServicos(); // Recarregar a lista de serviços
-    } else {
-      alert('Erro ao adicionar serviço.');
-    }
-  } catch (error) {
-    console.error('Erro ao salvar serviço:', error);
-    showToast('Erro ao adicionar serviço: ' + error.message, 'Erro', 'danger');
-  }
-});
-      </script>
   </body>
 </html>
