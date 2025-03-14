@@ -11,176 +11,27 @@
   <!-- FontAwesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- Supabase JS Client -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  
-  <!-- Data Picker -->
+  <!-- Date Picker -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
   
+  <!-- CSS Base -->
+  <link href="./css/painel.css" rel="stylesheet">
+  
+  <!-- Estilos específicos da página -->
   <style>
-    :root {
-      --primary-color: #4361ee;
-      --secondary-color: #3f37c9;
-      --success-color: #4cc9f0;
-      --danger-color: #f72585;
-      --warning-color: #ffaa00;
-      --light-bg: #f8f9fa;
-    }
-    
-    body {
-      min-height: 100vh;
-      background-color: #f5f7ff;
-    }
-    
-    .sidebar {
-      background-color: #fff;
-      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-      height: 100vh;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 250px;
-      z-index: 1000;
-    }
-    
-    .sidebar-header {
-      background-color: var(--primary-color);
-      color: white;
-      padding: 20px;
-      text-align: center;
-    }
-    
-    .sidebar-logo {
-      width: 50px;
-      height: 50px;
-      background-color: white;
-      border-radius: 10px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 15px;
-    }
-    
-    .sidebar-logo i {
-      font-size: 24px;
-      color: var(--primary-color);
-    }
-    
-    .sidebar-menu {
-      padding: 20px 0;
-    }
-    
-    .menu-item {
-      padding: 12px 20px;
-      display: flex;
-      align-items: center;
-      color: #555;
-      text-decoration: none;
-      transition: all 0.3s;
-    }
-    
-    .menu-item:hover {
-      background-color: rgba(67, 97, 238, 0.1);
-      color: var(--primary-color);
-    }
-    
-    .menu-item.active {
-      background-color: rgba(67, 97, 238, 0.2);
-      color: var(--primary-color);
-      border-left: 4px solid var(--primary-color);
-    }
-    
-    .menu-item i {
-      margin-right: 15px;
-      width: 20px;
-      text-align: center;
-    }
-    
-    .content-wrapper {
-      margin-left: 250px;
-      padding: 30px;
-    }
-    
-    .page-title {
-      margin-bottom: 30px;
-      padding-bottom: 15px;
-      border-bottom: 1px solid #eee;
-    }
-    
-    .card {
-      border: none;
-      border-radius: 15px;
-      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-      margin-bottom: 30px;
-    }
-    
-    .card-header {
-      background-color: white;
-      border-bottom: 1px solid #eee;
-      padding: 20px;
-      border-radius: 15px 15px 0 0 !important;
-    }
-    
-    .card-body {
-      padding: 25px;
-    }
-    
-    .btn-rounded {
-      border-radius: 30px;
-      padding: 8px 20px;
-    }
-    
-    .table-user img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin-right: 10px;
-    }
-    
-    .table-user .user-name {
-      font-weight: 500;
-    }
-    
-    .table-user .user-role {
-      font-size: 0.85rem;
-      color: #777;
-    }
-    
-    .badge {
-      padding: 6px 12px;
-      border-radius: 30px;
-      font-weight: 500;
-    }
-    
-    .badge-success {
-      background-color: rgba(76, 201, 240, 0.2);
-      color: var(--success-color);
-    }
-    
-    .badge-warning {
-      background-color: rgba(255, 170, 0, 0.2);
-      color: var(--warning-color);
-    }
-    
-    .badge-danger {
-      background-color: rgba(247, 37, 133, 0.2);
-      color: var(--danger-color);
-    }
-    
     .user-action-btn {
       width: 32px;
       height: 32px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      border-radius: 6px;
-      background-color: #f5f5f5;
-      color: #555;
+      border-radius: var(--radius);
+      background-color: var(--color-gray-100);
+      color: var(--color-gray-700);
       margin-right: 5px;
-      transition: all 0.2s;
+      transition: var(--transition);
+      border: none;
+      cursor: pointer;
     }
     
     .user-action-btn:hover {
@@ -189,540 +40,815 @@
     
     .user-action-btn.edit:hover {
       background-color: rgba(76, 201, 240, 0.2);
-      color: var(--success-color);
+      color: var(--color-info);
     }
     
     .user-action-btn.delete:hover {
-      background-color: rgba(247, 37, 133, 0.2);
-      color: var(--danger-color);
-    }
-    
-    .form-floating > .form-control,
-    .form-floating > .form-select {
-      height: 55px;
-    }
-    
-    .top-navbar {
-      background-color: white;
-      height: 70px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-      padding: 0 30px;
-      margin-bottom: 30px;
-    }
-    
-    .user-dropdown {
-      cursor: pointer;
-    }
-    
-    .user-dropdown img {
-      width: 35px;
-      height: 35px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin-right: 10px;
+      background-color: rgba(239, 68, 68, 0.2);
+      color: var(--color-danger);
     }
     
     .user-expiring {
-      background-color: #fff8e6;
+      background-color: rgba(245, 158, 11, 0.1);
     }
-  </style>
-</head>
-<body>
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-logo">
-        <i class="fas fa-desktop"></i>
-      </div>
-      <h5 class="mb-0">TI Service CRM</h5>
-      <p class="small mb-0">Gerenciamento de TI</p>
-    </div>
     
-    <div class="sidebar-menu">
-      <a href="painel.html" class="menu-item">
-        <i class="fas fa-tachometer-alt"></i> Dashboard
-      </a>
-      <a href="tickets.html" class="menu-item">
-        <i class="fas fa-ticket-alt"></i> Tickets
-      </a>
-      <a href="clientes.html" class="menu-item">
-        <i class="fas fa-users"></i> Clientes
-      </a>
-      <a href="usuarios.html" class="menu-item active">
-        <i class="fas fa-user-shield"></i> Usuários
-      </a>
-      <a href="relatorios.html" class="menu-item">
-        <i class="fas fa-chart-bar"></i> Relatórios
-      </a>
-      <a href="configuracoes.html" class="menu-item">
-        <i class="fas fa-cog"></i> Configurações
-      </a>
-      <hr>
-      <a href="#" id="logout-btn" class="menu-item">
-        <i class="fas fa-sign-out-alt"></i> Sair
-      </a>
-    </div>
-  </div>
-  
-  <!-- Main Content -->
-  <div class="content-wrapper">
-    <!-- Top Navbar -->
-    <nav class="navbar top-navbar mb-4">
-      <div class="d-flex align-items-center">
-        <h4 class="mb-0">Gerenciamento de Usuários</h4>
-      </div>
-      <div class="user-dropdown d-flex align-items-center" id="user-info">
-        <span class="me-2" id="username-display">Carregando...</span>
-        <i class="fas fa-user-circle fs-4"></i>
-      </div>
-    </nav>
+    .user-role {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.5rem;
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-weight: 500;
+      background-color: var(--color-gray-100);
+      color: var(--color-gray-700);
+    }
     
-    <div class="row mb-4">
-      <div class="col-md-12">
-        <div class="card">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Lista de Usuários</h5>
-            <button class="btn btn-primary btn-rounded" data-bs-toggle="modal" data-bs-target="#addUserModal" id="add-user-btn">
-              <i class="fas fa-plus me-2"></i> Adicionar Usuário
-            </button>
+    .user-role.administrador {
+      background-color: rgba(239, 68, 68, 0.1);
+      color: var(--color-danger);
+    }
+    
+    .user-role.suporte {
+      background-color: rgba(59, 130, 246, 0.1);
+      color: var(--color-info);
+    }
+    
+    .user-role.tecnico {
+      background-color: rgba(16, 185, 129, 0.1);
+      color: var(--color-success);
+    }
+    
+    .user-role.atendente {
+      background-color: rgba(245, 158, 11, 0.1);
+      color: var(--color-warning);
+    }<!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>TI KL CRM - Gerenciamento de Usuários</title>
+      
+      <!-- Bootstrap 5 CSS -->
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+      
+      <!-- FontAwesome -->
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+      
+      <!-- Date Picker -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+      
+      <!-- CSS Base -->
+      <link href="./css/painel.css" rel="stylesheet">
+      
+      <!-- Estilos específicos da página -->
+      <style>
+        .user-action-btn {
+          width: 32px;
+          height: 32px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: var(--radius);
+          background-color: var(--color-gray-100);
+          color: var(--color-gray-700);
+          margin-right: 5px;
+          transition: var(--transition);
+          border: none;
+          cursor: pointer;
+        }
+        
+        .user-action-btn:hover {
+          transform: translateY(-2px);
+        }
+        
+        .user-action-btn.edit:hover {
+          background-color: rgba(76, 201, 240, 0.2);
+          color: var(--color-info);
+        }
+        
+        .user-action-btn.delete:hover {
+          background-color: rgba(239, 68, 68, 0.2);
+          color: var(--color-danger);
+        }
+        
+        .user-expiring {
+          background-color: rgba(245, 158, 11, 0.1);
+        }
+        
+        .user-role {
+          display: inline-flex;
+          align-items: center;
+          padding: 0.25rem 0.5rem;
+          border-radius: var(--radius-full);
+          font-size: 0.75rem;
+          font-weight: 500;
+          background-color: var(--color-gray-100);
+          color: var(--color-gray-700);
+        }
+        
+        .user-role.administrador {
+          background-color: rgba(239, 68, 68, 0.1);
+          color: var(--color-danger);
+        }
+        
+        .user-role.suporte {
+          background-color: rgba(59, 130, 246, 0.1);
+          color: var(--color-info);
+        }
+        
+        .user-role.tecnico {
+          background-color: rgba(16, 185, 129, 0.1);
+          color: var(--color-success);
+        }
+        
+        .user-role.atendente {
+          background-color: rgba(245, 158, 11, 0.1);
+          color: var(--color-warning);
+        }
+    
+        .shake {
+          animation: shake 0.5s;
+        }
+        
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+          20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container-fluid">
+        <div class="row">
+          <!-- Sidebar -->
+          <div class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+            <div class="position-sticky pt-3">
+              <div class="text-center mb-4">
+                <div class="sidebar-logo mx-auto">
+                  <i class="fas fa-desktop"></i>
+                </div>
+                <h4>KL CRM</h4>
+                <p class="small">Serviços de TI</p>
+              </div>
+    
+              <ul class="nav flex-column">
+                <li class="nav-item">
+                  <a class="nav-link" href="painel.html">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#" id="clientes-link">
+                    <i class="fas fa-users"></i>
+                    Clientes
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#" id="servicos-link">
+                    <i class="fas fa-tools"></i>
+                    Serviços
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#" id="ordens-link">
+                    <i class="fas fa-clipboard-list"></i>
+                    Ordens de Serviço
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="cadastro-usuarios.html">
+                    <i class="fas fa-user-plus"></i>
+                    Cadastrar Usuários
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link active" href="gerenciar_users.html">
+                    <i class="fas fa-user-shield"></i>
+                    Gerenciar Usuários
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#" id="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Sair
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
-          <div class="card-body">
-            <!-- Alerta de autorização -->
-            <div id="auth-alert" class="alert alert-danger d-none" role="alert">
-              <i class="fas fa-exclamation-triangle me-2"></i> Somente o usuário administrador (kauanlauer) pode adicionar novos usuários.
+    
+          <!-- Main Content -->
+          <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- Cabeçalho da página -->
+            <div class="d-flex justify-content-between align-items-center py-3 mb-4 border-bottom">
+              <h1 class="h2"><i class="fas fa-user-shield me-2"></i> Gerenciamento de Usuários</h1>
+              <div class="d-flex align-items-center">
+                <span class="me-3">Usuário: <strong id="username-display">Carregando...</strong></span>
+                <a href="#" id="logout-link" class="btn btn-outline-primary btn-sm">
+                  <i class="fas fa-sign-out-alt me-1"></i> Sair
+                </a>
+              </div>
             </div>
             
-            <!-- Alerta de sucesso -->
-            <div id="success-alert" class="alert alert-success d-none" role="alert">
-              <i class="fas fa-check-circle me-2"></i> <span id="success-message"></span>
-            </div>
-            
-            <!-- Tabela de usuários -->
-            <div class="table-responsive">
-              <table class="table table-hover">
-                <thead>
-                  <tr>
-                    <th>Usuário</th>
-                    <th>Nome Completo</th>
-                    <th>Cargo</th>
-                    <th>Status</th>
-                    <th>Data Criação</th>
-                    <th>Expiração</th>
-                    <th>Ações</th>
-                  </tr>
-                </thead>
-                <tbody id="users-table-body">
-                  <!-- Dados dos usuários vão aqui -->
-                  <tr>
-                    <td colspan="7" class="text-center">Carregando usuários...</td>
-                  </tr>
-                </tbody>
-              </table>
+            <!-- Card principal -->
+            <div class="card mb-4">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Lista de Usuários</h5>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal" id="add-user-btn">
+                  <i class="fas fa-plus me-2"></i> Adicionar Usuário
+                </button>
+              </div>
+              <div class="card-body">
+                <!-- Alerta de autorização -->
+                <div id="auth-alert" class="alert alert-danger d-none" role="alert">
+                  <i class="fas fa-exclamation-triangle me-2"></i> Somente o usuário administrador (kauanlauer) pode adicionar novos usuários.
+                </div>
+                
+                <!-- Alerta de sucesso -->
+                <div id="success-alert" class="alert alert-success d-none" role="alert">
+                  <i class="fas fa-check-circle me-2"></i> <span id="success-message"></span>
+                </div>
+    
+                <!-- Filtros e busca -->
+                <div class="row mb-4">
+                  <div class="col-md-6 mb-3 mb-md-0">
+                    <div class="input-group">
+                      <span class="input-group-text"><i class="fas fa-search"></i></span>
+                      <input type="text" class="form-control" id="search-user" placeholder="Buscar usuário...">
+                    </div>
+                  </div>
+                  <div class="col-md-3 mb-3 mb-md-0">
+                    <select class="form-select" id="filter-role">
+                      <option value="">Todos os cargos</option>
+                      <option value="Administrador">Administrador</option>
+                      <option value="Suporte">Suporte</option>
+                      <option value="Técnico">Técnico</option>
+                      <option value="Atendente">Atendente</option>
+                    </select>
+                  </div>
+                  <div class="col-md-3">
+                    <select class="form-select" id="filter-status">
+                      <option value="">Todos os status</option>
+                      <option value="ativo">Ativos</option>
+                      <option value="temporario">Temporários</option>
+                      <option value="expirado">Expirados</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <!-- Tabela de usuários -->
+                <div class="table-responsive">
+                  <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th>Usuário</th>
+                        <th>Nome Completo</th>
+                        <th>Cargo</th>
+                        <th>Status</th>
+                        <th>Data Criação</th>
+                        <th>Expiração</th>
+                        <th>Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                      <tr>
+                        <td colspan="7" class="text-center">Carregando usuários...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                  <div>
+                    <span id="total-users">0</span> usuários encontrados
+                  </div>
+                  <nav aria-label="Navegação de páginas">
+                    <ul class="pagination pagination-sm" id="pagination">
+                      <!-- Paginação será gerada pelo JavaScript -->
+                    </ul>
+                  </nav>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
-  
-  <!-- Modal para adicionar usuário -->
-  <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="addUserModalLabel">Adicionar Novo Usuário</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form id="add-user-form">
-            <div class="mb-3">
-              <label for="new-username" class="form-label">Nome de Usuário</label>
-              <input type="text" class="form-control" id="new-username" required>
+      
+      <!-- Modal para adicionar usuário -->
+      <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="addUserModalLabel">Adicionar Novo Usuário</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            
-            <div class="mb-3">
-              <label for="new-password" class="form-label">Senha</label>
-              <input type="password" class="form-control" id="new-password" required>
+            <div class="modal-body">
+              <form id="add-user-form">
+                <div class="mb-3">
+                  <label for="new-username" class="form-label">Nome de Usuário</label>
+                  <input type="text" class="form-control" id="new-username" required>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="new-password" class="form-label">Senha</label>
+                  <div class="input-group">
+                    <input type="password" class="form-control" id="new-password" required>
+                    <button class="btn btn-outline-secondary toggle-password" type="button">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="new-fullname" class="form-label">Nome Completo</label>
+                  <input type="text" class="form-control" id="new-fullname" required>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="new-role" class="form-label">Cargo</label>
+                  <select class="form-select" id="new-role" required>
+                    <option value="">Selecione um cargo</option>
+                    <option value="Administrador">Administrador</option>
+                    <option value="Suporte">Suporte</option>
+                    <option value="Técnico">Técnico</option>
+                    <option value="Atendente">Atendente</option>
+                  </select>
+                </div>
+                
+                <div class="mb-3 form-check">
+                  <input type="checkbox" class="form-check-input" id="temp-user-check">
+                  <label class="form-check-label" for="temp-user-check">Usuário Temporário</label>
+                </div>
+                
+                <div class="mb-3 d-none" id="expiration-date-group">
+                  <label for="expiration-date" class="form-label">Data de Expiração</label>
+                  <input type="text" class="form-control" id="expiration-date" placeholder="Selecione a data...">
+                </div>
+              </form>
             </div>
-            
-            <div class="mb-3">
-              <label for="new-fullname" class="form-label">Nome Completo</label>
-              <input type="text" class="form-control" id="new-fullname" required>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="button" class="btn btn-primary" id="save-user-btn">Salvar</button>
             </div>
-            
-            <div class="mb-3">
-              <label for="new-role" class="form-label">Cargo</label>
-              <select class="form-select" id="new-role" required>
-                <option value="">Selecione um cargo</option>
-                <option value="Administrador">Administrador</option>
-                <option value="Suporte">Suporte</option>
-                <option value="Técnico">Técnico</option>
-                <option value="Atendente">Atendente</option>
-              </select>
-            </div>
-            
-            <div class="mb-3 form-check">
-              <input type="checkbox" class="form-check-input" id="temp-user-check">
-              <label class="form-check-label" for="temp-user-check">Usuário Temporário</label>
-            </div>
-            
-            <div class="mb-3 d-none" id="expiration-date-group">
-              <label for="expiration-date" class="form-label">Data de Expiração</label>
-              <input type="text" class="form-control" id="expiration-date" placeholder="Selecione a data...">
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="button" class="btn btn-primary" id="save-user-btn">Salvar</button>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-  
-  <!-- Bootstrap JS Bundle with Popper -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Inicialização do cliente Supabase
-      const SUPABASE_URL = 'https://rdhftnrksrawaahoqgpo.supabase.co';
-      const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkaGZ0bnJrc3Jhd2FhaG9xZ3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE5ODA3NDQsImV4cCI6MjA1NzU1Njc0NH0.v7ItKQTkx9TNGoPBIlsgcwYUQ3jA8PlY1SaIj6bH5qA';
-      const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       
-      // Inicialização de variáveis
-      let currentUser = null;
+      <!-- Modal para editar usuário -->
+      <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="editUserModalLabel">Editar Usuário</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <form id="edit-user-form">
+                <input type="hidden" id="edit-user-id">
+                
+                <div class="mb-3">
+                  <label for="edit-username" class="form-label">Nome de Usuário</label>
+                  <input type="text" class="form-control" id="edit-username" readonly>
+                  <div class="form-text">O nome de usuário não pode ser alterado</div>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="edit-password" class="form-label">Nova Senha (opcional)</label>
+                  <div class="input-group">
+                    <input type="password" class="form-control" id="edit-password" placeholder="Deixe em branco para manter a senha atual">
+                    <button class="btn btn-outline-secondary toggle-password" type="button">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="edit-fullname" class="form-label">Nome Completo</label>
+                  <input type="text" class="form-control" id="edit-fullname" required>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="edit-role" class="form-label">Cargo</label>
+                  <select class="form-select" id="edit-role" required>
+                    <option value="">Selecione um cargo</option>
+                    <option value="Administrador">Administrador</option>
+                    <option value="Suporte">Suporte</option>
+                    <option value="Técnico">Técnico</option>
+                    <option value="Atendente">Atendente</option>
+                  </select>
+                </div>
+                
+                <div class="mb-3 form-check">
+                  <input type="checkbox" class="form-check-input" id="edit-temp-user">
+                  <label class="form-check-label" for="edit-temp-user">Usuário Temporário</label>
+                </div>
+                
+                <div class="mb-3 d-none" id="edit-expiration-group">
+                  <label for="edit-expiration-date" class="form-label">Data de Expiração</label>
+                  <input type="text" class="form-control" id="edit-expiration-date" placeholder="Selecione a data...">
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="button" class="btn btn-primary" id="update-user-btn">Atualizar</button>
+            </div>
+          </div>
+        </div>
+      </div>
       
-      // Verificar autenticação
-      function checkAuth() {
-        const isAuthenticated = sessionStorage.getItem('authenticated');
-        const username = sessionStorage.getItem('username');
-        
-        if (!isAuthenticated || !username) {
-          // Redirecionar para a página de login
-          window.location.href = 'index.html';
-          return false;
-        }
-        
-        // Exibir nome do usuário
-        document.getElementById('username-display').textContent = username;
-        currentUser = username;
-        
-        // Verificar se o usuário tem permissão para adicionar usuários
-        const addUserBtn = document.getElementById('add-user-btn');
-        const authAlert = document.getElementById('auth-alert');
-        
-        if (username !== 'kauanlauer') {
-          addUserBtn.disabled = true;
-          addUserBtn.classList.add('d-none');
-          authAlert.classList.remove('d-none');
-        } else {
-          addUserBtn.disabled = false;
-          addUserBtn.classList.remove('d-none');
-          authAlert.classList.add('d-none');
-        }
-        
-        return true;
-      }
+      <!-- Controles Mobile -->
+      <button class="mobile-menu-toggle d-md-none">
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="sidebar-overlay"></div>
       
-      // Inicializar o date picker
-      const expirationDatePicker = flatpickr("#expiration-date", {
-        dateFormat: "Y-m-d H:i",
-        minDate: "today",
-        enableTime: true,
-        time_24hr: true,
-        locale: "pt"
-      });
+      <!-- Bootstrap JS Bundle with Popper -->
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
       
-      // Toggle para exibir/ocultar campo de data de expiração
-      document.getElementById('temp-user-check').addEventListener('change', function() {
-        const expirationGroup = document.getElementById('expiration-date-group');
-        if (this.checked) {
-          expirationGroup.classList.remove('d-none');
-        } else {
-          expirationGroup.classList.add('d-none');
-        }
-      });
+      <!-- Supabase JS Client -->
+      <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
       
-      // Carregar lista de usuários
-      async function loadUsers() {
-        try {
-          const { data: users, error } = await supabase
-            .from('usuarios')
-            .select('*')
-            .order('data_criacao', { ascending: false });
-          
-          if (error) throw error;
-          
-          renderUsersTable(users);
-        } catch (error) {
-          console.error('Erro ao carregar usuários:', error);
-          showAlert('Erro ao carregar a lista de usuários. Tente novamente mais tarde.', 'danger');
-        }
-      }
+      <!-- Date Picker -->
+      <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+      <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
       
-      // Renderizar tabela de usuários
-      function renderUsersTable(users) {
-        const tableBody = document.getElementById('users-table-body');
-        
-        if (!users || users.length === 0) {
-          tableBody.innerHTML = '<tr><td colspan="7" class="text-center">Nenhum usuário encontrado.</td></tr>';
-          return;
-        }
-        
-        // Obter data atual para verificação de expiração
-        const currentDate = new Date();
-        
-        let html = '';
-        users.forEach(user => {
-          // Verificar se o usuário está expirado
-          const isExpired = user.data_expiracao && new Date(user.data_expiracao) < currentDate;
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          // Inicialização do cliente Supabase
+          const SUPABASE_URL = 'https://rdhftnrksrawaahoqgpo.supabase.co';
+          const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkaGZ0bnJrc3Jhd2FhaG9xZ3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE5ODA3NDQsImV4cCI6MjA1NzU1Njc0NH0.v7ItKQTkx9TNGoPBIlsgcwYUQ3jA8PlY1SaIj6bH5qA';
+          const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
           
-          // Verificar se o usuário vai expirar em breve (próximos 3 dias)
-          const expirationDate = user.data_expiracao ? new Date(user.data_expiracao) : null;
-          const threeDaysFromNow = new Date();
-          threeDaysFromNow.setDate(currentDate.getDate() + 3);
+          // Elementos do DOM
+          const usersTableBody = document.getElementById('users-table-body');
+          const totalUsers = document.getElementById('total-users');
+          const pagination = document.getElementById('pagination');
+          const addUserBtn = document.getElementById('add-user-btn');
+          const authAlert = document.getElementById('auth-alert');
+          const usernameDisplay = document.getElementById('username-display');
+          const successAlert = document.getElementById('success-alert');
+          const successMessage = document.getElementById('success-message');
+          const searchInput = document.getElementById('search-user');
+          const filterRole = document.getElementById('filter-role');
+          const filterStatus = document.getElementById('filter-status');
+          const logoutBtn = document.getElementById('logout-btn');
+          const logoutLink = document.getElementById('logout-link');
           
-          const isExpiringSoon = expirationDate && expirationDate > currentDate && expirationDate < threeDaysFromNow;
+          // Modais
+          const addUserModal = new bootstrap.Modal(document.getElementById('addUserModal'));
+          const editUserModal = new bootstrap.Modal(document.getElementById('editUserModal'));
           
-          // Determinar o status do usuário
-          let statusBadge = '';
-          if (isExpired) {
-            statusBadge = '<span class="badge badge-danger">Expirado</span>';
-          } else if (user.is_temporario) {
-            statusBadge = isExpiringSoon ? 
-              '<span class="badge badge-warning">Expira em breve</span>' : 
-              '<span class="badge badge-warning">Temporário</span>';
-          } else {
-            statusBadge = '<span class="badge badge-success">Ativo</span>';
-          }
+          // Inicialização de variáveis
+          let currentUser = null;
+          let isAuthorized = false;
+          let currentPage = 1;
+          let itemsPerPage = 10;
+          let totalPages = 1;
+          let allUsers = [];
+          let filteredUsers = [];
           
-          const rowClass = isExpiringSoon ? 'user-expiring' : '';
-          
-          html += `
-            <tr class="${rowClass}" data-id="${user.id}">
-              <td>${user.username}</td>
-              <td>${user.nome_completo || '-'}</td>
-              <td>${user.cargo || '-'}</td>
-              <td>${statusBadge}</td>
-              <td>${formatDate(user.data_criacao)}</td>
-              <td>${user.data_expiracao ? formatDate(user.data_expiracao) : '-'}</td>
-              <td>
-                <button class="user-action-btn edit" title="Editar" data-id="${user.id}">
-                  <i class="fas fa-pencil-alt"></i>
-                </button>
-                <button class="user-action-btn delete" title="Excluir" data-id="${user.id}">
-                  <i class="fas fa-trash-alt"></i>
-                </button>
-              </td>
-            </tr>
-          `;
-        });
-        
-        tableBody.innerHTML = html;
-        
-        // Adicionar event listeners aos botões de ação
-        document.querySelectorAll('.user-action-btn.delete').forEach(btn => {
-          btn.addEventListener('click', function() {
-            const userId = this.getAttribute('data-id');
-            deleteUser(userId);
+          // Inicializar os date pickers
+          const expirationDatePicker = flatpickr("#expiration-date", {
+            dateFormat: "Y-m-d H:i",
+            minDate: "today",
+            enableTime: true,
+            time_24hr: true,
+            locale: "pt"
           });
-        });
-      }
-      
-      // Salvar novo usuário
-      async function saveNewUser(userData) {
-        try {
-          const { data, error } = await supabase
-            .from('usuarios')
-            .insert([userData])
-            .select();
           
-          if (error) throw error;
+          const editExpirationDatePicker = flatpickr("#edit-expiration-date", {
+            dateFormat: "Y-m-d H:i",
+            minDate: "today",
+            enableTime: true,
+            time_24hr: true,
+            locale: "pt"
+          });
           
-          // Esconder modal e recarregar usuários
-          const modal = bootstrap.Modal.getInstance(document.getElementById('addUserModal'));
-          modal.hide();
-          
-          // Limpar formulário
-          document.getElementById('add-user-form').reset();
-          document.getElementById('expiration-date-group').classList.add('d-none');
-          
-          // Recarregar usuários
-          loadUsers();
-          
-          // Mostrar mensagem de sucesso
-          showAlert('Usuário adicionado com sucesso!', 'success');
-        } catch (error) {
-          console.error('Erro ao salvar usuário:', error);
-          
-          if (error.code === '23505') {
-            showAlert('Nome de usuário já existe. Por favor, escolha outro nome de usuário.', 'danger');
-          } else {
-            showAlert('Erro ao salvar usuário. Tente novamente mais tarde.', 'danger');
-          }
-        }
-      }
-      
-      // Excluir usuário
-      async function deleteUser(userId) {
-        if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
-        
-        try {
-          const { error } = await supabase
-            .from('usuarios')
-            .delete()
-            .eq('id', userId);
-          
-          if (error) throw error;
-          
-          // Recarregar usuários
-          loadUsers();
-          
-          // Mostrar mensagem de sucesso
-          showAlert('Usuário excluído com sucesso!', 'success');
-        } catch (error) {
-          console.error('Erro ao excluir usuário:', error);
-          showAlert('Erro ao excluir usuário. Tente novamente mais tarde.', 'danger');
-        }
-      }
-      
-      // Mostrar alerta
-      function showAlert(message, type) {
-        const successAlert = document.getElementById('success-alert');
-        const successMessage = document.getElementById('success-message');
-        
-        if (type === 'success') {
-          successMessage.textContent = message;
-          successAlert.classList.remove('d-none');
-          successAlert.classList.remove('alert-danger');
-          successAlert.classList.add('alert-success');
-          
-          // Esconder a mensagem após 3 segundos
-          setTimeout(() => {
-            successAlert.classList.add('d-none');
-          }, 3000);
-        } else {
-          alert(message);
-        }
-      }
-      
-      // Formatar data
-      function formatDate(dateString) {
-        if (!dateString) return '-';
-        
-        const date = new Date(dateString);
-        return new Intl.DateTimeFormat('pt-BR', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        }).format(date);
-      }
-      
-      // Event listener para o botão de salvar usuário
-      document.getElementById('save-user-btn').addEventListener('click', function() {
-        // Validar formulário
-        const username = document.getElementById('new-username').value.trim();
-        const password = document.getElementById('new-password').value.trim();
-        const fullName = document.getElementById('new-fullname').value.trim();
-        const role = document.getElementById('new-role').value;
-        const isTemporary = document.getElementById('temp-user-check').checked;
-        const expirationDate = document.getElementById('expiration-date').value;
-        
-        if (!username || !password || !fullName || !role) {
-          alert('Por favor, preencha todos os campos obrigatórios.');
-          return;
-        }
-        
-        if (isTemporary && !expirationDate) {
-          alert('Para usuários temporários, a data de expiração é obrigatória.');
-          return;
-        }
-        
-        // Preparar dados do usuário
-        const userData = {
-          username,
-          password,
-          nome_completo: fullName,
-          cargo: role,
-          is_temporario: isTemporary,
-          data_expiracao: isTemporary ? new Date(expirationDate).toISOString() : null
-        };
-        
-        // Salvar usuário
-        saveNewUser(userData);
-      });
-      
-      // Event listener para o botão de logout
-      document.getElementById('logout-btn').addEventListener('click', function(e) {
-        e.preventDefault();
-        
-        // Limpar dados de autenticação
-        sessionStorage.removeItem('authenticated');
-        sessionStorage.removeItem('username');
-        sessionStorage.removeItem('user_id');
-        sessionStorage.removeItem('user_role');
-        
-        // Redirecionar para a página de login
-        window.location.href = 'index.html';
-      });
-      
-      // Verificar autenticação e carregar usuários
-      if (checkAuth()) {
-        loadUsers();
-        
-        // Agendar verificação de usuários expirados a cada 1 hora
-        setInterval(checkExpiredUsers, 60 * 60 * 1000);
-      }
-      
-      // Verificar e remover usuários expirados
-      async function checkExpiredUsers() {
-        try {
-          const currentDate = new Date().toISOString();
-          
-          // Buscar usuários expirados
-          const { data: expiredUsers, error } = await supabase
-            .from('usuarios')
-            .select('id, username')
-            .eq('is_temporario', true)
-            .lt('data_expiracao', currentDate);
-          
-          if (error) throw error;
-          
-          if (expiredUsers && expiredUsers.length > 0) {
-            console.log(`Encontrados ${expiredUsers.length} usuários expirados.`);
+          // Verificar autenticação
+          function checkAuth() {
+            const isAuthenticated = sessionStorage.getItem('authenticated');
+            const username = sessionStorage.getItem('username');
             
-            // Remover usuários expirados
-            const expiredIds = expiredUsers.map(user => user.id);
-            
-            const { error: deleteError } = await supabase
-              .from('usuarios')
-              .delete()
-              .in('id', expiredIds);
-            
-            if (deleteError) throw deleteError;
-            
-            console.log(`${expiredUsers.length} usuários expirados foram removidos.`);
-            
-            // Mostrar mensagem informativa se usuários foram removidos durante a navegação
-            if (document.visibilityState === 'visible') {
-              const usernames = expiredUsers.map(user => user.username).join(', ');
-              showAlert(`${expiredUsers.length} usuários expirados foram removidos: ${usernames}`, 'success');
+            if (!isAuthenticated || !username) {
+              window.location.href = 'index.html';
+              return false;
             }
             
-            // Recarregar lista de usuários
-            loadUsers();
+            // Exibir nome do usuário
+            usernameDisplay.textContent = username;
+            currentUser = username;
+            
+            // Verificar se o usuário tem permissão para adicionar usuários
+            if (username !== 'kauanlauer') {
+              addUserBtn.disabled = true;
+              addUserBtn.classList.add('d-none');
+              authAlert.classList.remove('d-none');
+              isAuthorized = false;
+            } else {
+              addUserBtn.disabled = false;
+              addUserBtn.classList.remove('d-none');
+              authAlert.classList.add('d-none');
+              isAuthorized = true;
+            }
+            
+            return true;
           }
-        } catch (error) {
-          console.error('Erro ao verificar usuários expirados:', error);
-        }
-      }
-      
-      // Verificar usuários expirados na inicialização
-      checkExpiredUsers();
-    });
-  </script>
-</body>
-</html>
+          
+          // Toggle para exibir/ocultar campo de data de expiração
+          document.getElementById('temp-user-check').addEventListener('change', function() {
+            const expirationGroup = document.getElementById('expiration-date-group');
+            if (this.checked) {
+              expirationGroup.classList.remove('d-none');
+            } else {
+              expirationGroup.classList.add('d-none');
+            }
+          });
+          
+          document.getElementById('edit-temp-user').addEventListener('change', function() {
+            const expirationGroup = document.getElementById('edit-expiration-group');
+            if (this.checked) {
+              expirationGroup.classList.remove('d-none');
+            } else {
+              expirationGroup.classList.add('d-none');
+            }
+          });
+          
+          // Toggle de visibilidade da senha
+          document.querySelectorAll('.toggle-password').forEach(btn => {
+            btn.addEventListener('click', function() {
+              const passwordInput = this.previousElementSibling;
+              const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+              passwordInput.setAttribute('type', type);
+              this.querySelector('i').classList.toggle('fa-eye');
+              this.querySelector('i').classList.toggle('fa-eye-slash');
+            });
+          });
+          
+          // Carregar lista de usuários
+          async function loadUsers() {
+            try {
+              const { data: users, error } = await supabase
+                .from('usuarios')
+                .select('*')
+                .order('data_criacao', { ascending: false });
+              
+              if (error) throw error;
+              
+              allUsers = users || [];
+              filteredUsers = [...allUsers];
+              
+              updateTotalUsers();
+              renderPagination();
+              renderUsersTable(getCurrentPageUsers());
+            } catch (error) {
+              console.error('Erro ao carregar usuários:', error);
+              showAlert('Erro ao carregar a lista de usuários. Tente novamente mais tarde.', 'danger');
+            }
+          }
+          
+          // Aplicar filtros aos usuários
+          function applyFilters() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const roleFilter = filterRole.value;
+            const statusFilter = filterStatus.value;
+            
+            filteredUsers = allUsers.filter(user => {
+              // Filtro de busca (nome de usuário ou nome completo)
+              const matchesSearch = searchTerm === '' || 
+                                   user.username.toLowerCase().includes(searchTerm) || 
+                                   (user.nome_completo && user.nome_completo.toLowerCase().includes(searchTerm));
+              
+              // Filtro de cargo
+              const matchesRole = roleFilter === '' || user.cargo === roleFilter;
+              
+              // Filtro de status
+              let matchesStatus = true;
+              if (statusFilter !== '') {
+                const currentDate = new Date();
+                const isExpired = user.data_expiracao && new Date(user.data_expiracao) < currentDate;
+                
+                if (statusFilter === 'ativo' && (user.is_temporario || isExpired)) {
+                  matchesStatus = false;
+                } else if (statusFilter === 'temporario' && (!user.is_temporario || isExpired)) {
+                  matchesStatus = false;
+                } else if (statusFilter === 'expirado' && !isExpired) {
+                  matchesStatus = false;
+                }
+              }
+              
+              return matchesSearch && matchesRole && matchesStatus;
+            });
+            
+            // Resetar paginação e atualizar tabela
+            currentPage = 1;
+            updateTotalUsers();
+            renderPagination();
+            renderUsersTable(getCurrentPageUsers());
+          }
+          
+          // Atualizar contador de usuários
+          function updateTotalUsers() {
+            totalUsers.textContent = filteredUsers.length;
+          }
+          
+          // Obter usuários da página atual
+          function getCurrentPageUsers() {
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            return filteredUsers.slice(startIndex, endIndex);
+          }
+          
+          // Renderizar controles de paginação
+          function renderPagination() {
+            totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+            
+            let html = '';
+            
+            // Botão anterior
+            html += `
+              <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${currentPage - 1}" aria-label="Anterior">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+            `;
+            
+            // Páginas numeradas
+            for (let i = 1; i <= totalPages; i++) {
+              if (totalPages <= 7 || i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+                html += `
+                  <li class="page-item ${i === currentPage ? 'active' : ''}">
+                    <a class="page-link" href="#" data-page="${i}">${i}</a>
+                  </li>
+                `;
+              } else if (i === currentPage - 2 || i === currentPage + 2) {
+                html += `
+                  <li class="page-item disabled">
+                    <a class="page-link" href="#">...</a>
+                  </li>
+                `;
+              }
+            }
+            
+            // Botão próximo
+            html += `
+              <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${currentPage + 1}" aria-label="Próximo">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+            `;
+            
+            pagination.innerHTML = html;
+            
+            // Adicionar event listeners aos links de paginação
+            document.querySelectorAll('.pagination .page-link').forEach(link => {
+              link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const page = parseInt(this.getAttribute('data-page'));
+                if (!isNaN(page) && page !== currentPage && page > 0 && page <= totalPages) {
+                  currentPage = page;
+                  renderUsersTable(getCurrentPageUsers());
+                  renderPagination();
+                }
+              });
+            });
+          }
+          
+          // Renderizar tabela de usuários
+          function renderUsersTable(users) {
+            if (!users || users.length === 0) {
+              usersTableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4">Nenhum usuário encontrado.</td></tr>';
+              return;
+            }
+            
+            // Obter data atual para verificação de expiração
+            const currentDate = new Date();
+            
+            let html = '';
+            users.forEach(user => {
+              // Verificar se o usuário está expirado
+              const isExpired = user.data_expiracao && new Date(user.data_expiracao) < currentDate;
+              
+              // Verificar se o usuário vai expirar em breve (próximos 3 dias)
+              const expirationDate = user.data_expiracao ? new Date(user.data_expiracao) : null;
+              const threeDaysFromNow = new Date();
+              threeDaysFromNow.setDate(currentDate.getDate() + 3);
+              
+              const isExpiringSoon = expirationDate && expirationDate > currentDate && expirationDate < threeDaysFromNow;
+              
+              // Determinar o status do usuário
+              let statusBadge = '';
+              if (isExpired) {
+                statusBadge = '<span class="badge bg-danger">Expirado</span>';
+              } else if (user.is_temporario) {
+                statusBadge = isExpiringSoon ? 
+                  '<span class="badge bg-warning">Expira em breve</span>' : 
+                  '<span class="badge bg-warning">Temporário</span>';
+              } else {
+                statusBadge = '<span class="badge bg-success">Ativo</span>';
+              }
+              
+              // Determinar a classe para o cargo
+              const roleClass = user.cargo ? user.cargo.toLowerCase() : '';
+              
+              // Determinar a classe da linha
+              const rowClass = isExpiringSoon ? 'user-expiring' : '';
+              
+              html += `
+                <tr class="${rowClass}" data-id="${user.id}">
+                  <td>${user.username}</td>
+                  <td>${user.nome_completo || '-'}</td>
+                  <td><span class="user-role ${roleClass}">${user.cargo || '-'}</span></td>
+                  <td>${statusBadge}</td>
+                  <td>${formatDate(user.data_criacao)}</td>
+                  <td>${user.data_expiracao ? formatDate(user.data_expiracao) : '-'}</td>
+                  <td>
+                    ${isAuthorized ? `
+                      <button class="user-action-btn edit" title="Editar" data-id="${user.id}">
+                        <i class="fas fa-pencil-alt"></i>
+                      </button>
+                      <button class="user-action-btn delete" title="Excluir" data-id="${user.id}">
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
+                    ` : '-'}
+                  </td>
+                </tr>
+              `;
+            });
+            
+            usersTableBody.innerHTML = html;
+            
+            // Adicionar event listeners aos botões de ação
+            if (isAuthorized) {
+              // Botões de edição
+              document.querySelectorAll('.user-action-btn.edit').forEach(btn => {
+                btn.addEventListener('click', function() {
+                  const userId = this.getAttribute('data-id');
+                  openEditUserModal(userId);
+                });
+              });
+              
+              // Botões de exclusão
+              document.querySelectorAll('.user-action-btn.delete').forEach(btn => {
+                btn.addEventListener('click', function() {
+                  const userId = this.getAttribute('data-id');
+                  deleteUser(userId);
+                });
+              });
+            }
+          }
+          
+          // Abrir modal de edição de usuário
+          async function openEditUserModal(userId) {
+            try {
+              // Buscar dados do usuário
+              const { data: user, error } = await supabase
+                .from('usuarios')
+                .select('*')
+                .eq('id', userId)
+                .single();
+              
+              if (error) throw error;
+              
+              if (!user) {
+                alert('Usuário não encontrado.');
+                return;
+              }
+              
+              // Preencher o formulário com os dados do usuário
+              document.getElementById('edit-user-id').value = user.id;
+              document.getElementById('edit-username').value = user.username;
+              document.getElementById('edit-password').value = '';
+              document.getElementById('edit-fullname').value = user.nome_completo || '';
+              document.getElementById('edit-role').value = user.cargo || '';
+              document.getElementById('edit-temp-user').checked = user.is_temporario;
+              
+              // Configurar campo de data de expiração
+              const expirationGroup = document.getElementById('edit-expiration-group');
+              if (user.is_temporario) {
+                expirationGroup.classList.remove('d-none');
+                editExpirationDatePicker.setDate(user.data_expiracao);
+              } else {
+                expirationGroup.classList.add('d-none');
+                editExpirationDatePicker.clear();
+              }
+              
+              // Abrir o modal
+              editUserModal.show();
+            } catch (error) {
+              console.error('Erro ao buscar dados do usuário:', error);
+              alert('Erro ao buscar dados do usuário. Tente novamente mais tarde.');
+            }
+          }
+          
+          // Salvar novo usuário
+          async function saveNewUser(userData) {
+            try {
+              const { data, error } = await supabase
+                .from('usuarios')
+                .insert([
