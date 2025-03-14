@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TI KL CRM - Login</title>
+  <title>TI KL CRM - Cadastro de Usuários</title>
   
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -13,6 +13,11 @@
   
   <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- Date Picker -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
   
   <style>
     :root {
@@ -24,130 +29,133 @@
     }
     
     body {
-      height: 100vh;
+      min-height: 100vh;
       background-color: #f5f7ff;
       background-image: linear-gradient(135deg, #f5f7ff 0%, #c3cffe 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
+      padding: 30px 0;
     }
     
-    /* Background decoration */
-    .bg-shape {
-      position: absolute;
-      opacity: 0.05;
-      z-index: -1;
-    }
-    
-    .bg-shape-1 {
-      top: -10%;
-      left: -5%;
-      width: 500px;
-      height: 500px;
-      border-radius: 50%;
-      background-color: var(--primary-color);
-    }
-    
-    .bg-shape-2 {
-      bottom: -15%;
-      right: -10%;
-      width: 600px;
-      height: 600px;
-      border-radius: 50%;
-      background-color: var(--success-color);
-    }
-    
-    .bg-shape-3 {
-      top: 40%;
-      right: 10%;
-      width: 300px;
-      height: 300px;
-      border-radius: 50%;
-      background-color: var(--danger-color);
-    }
-    
-    .login-container {
-      max-width: 430px;
-      width: 100%;
-      padding: 0 20px;
-    }
-    
-    .login-card {
-      background-color: white;
+    .card {
+      border: none;
       border-radius: 15px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
       overflow: hidden;
-      position: relative;
     }
     
-    .login-header {
+    .card-header {
       background-color: var(--primary-color);
+      color: white;
+      padding: 20px;
+      border-bottom: none;
+    }
+    
+    .card-body {
       padding: 30px;
-      text-align: center;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--secondary-color);
+      border-color: var(--secondary-color);
+    }
+    
+    .btn-outline-primary {
+      color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+    
+    .btn-outline-primary:hover {
+      background-color: var(--primary-color);
       color: white;
     }
     
-    .login-header h2 {
-      margin-bottom: 5px;
-      font-weight: 600;
+    .logo-wrapper {
+      margin-bottom: 15px;
+      text-align: center;
     }
     
-    .login-header p {
-      opacity: 0.8;
-      margin-bottom: 0;
+    .logo {
+      width: 60px;
+      height: 60px;
+      background-color: white;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
     
-    .login-body {
-      padding: 30px;
+    .logo i {
+      font-size: 30px;
+      color: var(--primary-color);
     }
     
-    .form-label {
+    .table-container {
+      background-color: white;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      padding: 20px;
+      margin-top: 30px;
+    }
+    
+    .badge {
+      padding: 6px 12px;
+      border-radius: 30px;
       font-weight: 500;
+    }
+    
+    .badge-success {
+      background-color: rgba(76, 201, 240, 0.2);
+      color: var(--success-color);
+    }
+    
+    .badge-warning {
+      background-color: rgba(255, 170, 0, 0.2);
+      color: #ffaa00;
+    }
+    
+    .badge-danger {
+      background-color: rgba(247, 37, 133, 0.2);
+      color: var(--danger-color);
+    }
+    
+    .nav-pills .nav-link.active {
+      background-color: var(--primary-color);
+    }
+    
+    .nav-pills .nav-link {
       color: #555;
     }
     
-    .input-group .input-group-text {
-      background-color: transparent;
-      border-right: none;
-      color: #aaa;
+    .nav-pills .nav-link:hover:not(.active) {
+      background-color: rgba(67, 97, 238, 0.1);
     }
     
-    .form-control {
-      border-left: none;
-      padding-left: 0;
+    .user-action {
+      font-size: 1.2rem;
+      color: #555;
+      cursor: pointer;
+      margin-left: 10px;
+      transition: all 0.2s;
     }
     
-    .form-control:focus {
-      box-shadow: none;
-      border-color: #ced4da;
+    .user-action:hover {
+      transform: translateY(-2px);
     }
     
-    .btn-login {
-      background-color: var(--primary-color);
-      border: none;
-      font-weight: 500;
-      padding: 10px;
+    .user-action.edit:hover {
+      color: var(--success-color);
     }
     
-    .btn-login:hover {
-      background-color: var(--secondary-color);
+    .user-action.delete:hover {
+      color: var(--danger-color);
     }
     
-    .remember-forgot {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
-    
-    .login-footer {
-      text-align: center;
-      padding-bottom: 20px;
-      color: #777;
-    }
-    
-    /* Animação de shake para erro de login */
+    /* Animação de shake para erro */
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
       10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
@@ -158,89 +166,167 @@
       animation: shake 0.5s;
     }
     
-    /* Logo empresa */
-    .logo-wrapper {
-      margin-bottom: 15px;
-    }
-    
-    .logo {
-      width: 70px;
-      height: 70px;
-      background-color: white;
-      border-radius: 12px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
-    
-    .logo i {
-      font-size: 36px;
-      color: var(--primary-color);
+    .auth-warning {
+      background-color: #fff8e6;
+      border-left: 4px solid #ffaa00;
     }
   </style>
 </head>
 <body>
-  <!-- Background shapes -->
-  <div class="bg-shape bg-shape-1"></div>
-  <div class="bg-shape bg-shape-2"></div>
-  <div class="bg-shape bg-shape-3"></div>
-  
-  <div class="login-container">
-    <div class="login-card">
-      <div class="login-header">
-        <div class="logo-wrapper">
-          <div class="logo">
-            <i class="fas fa-desktop"></i>
+  <div class="container">
+    <!-- Header com informações de login -->
+    <div class="row mb-4">
+      <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center">
+            <div class="logo me-3">
+              <i class="fas fa-desktop"></i>
+            </div>
+            <h2 class="mb-0">TI Service CRM</h2>
+          </div>
+          <div class="d-flex align-items-center">
+            <span class="me-3">Usuário: <strong id="current-username">Carregando...</strong></span>
+            <a href="index.html" class="btn btn-outline-primary btn-sm">
+              <i class="fas fa-sign-out-alt me-1"></i> Sair
+            </a>
           </div>
         </div>
-        <h2>TI Service CRM</h2>
-        <p>Gerencie seus serviços de TI</p>
       </div>
-      
-      <div class="login-body">
-        <div id="login-alert" class="alert alert-danger d-none" role="alert">
-          <i class="fas fa-exclamation-circle"></i> Usuário ou senha incorretos!
+    </div>
+    
+    <!-- Alert para não autorizados -->
+    <div id="auth-warning" class="row mb-4 d-none">
+      <div class="col-md-12">
+        <div class="alert auth-warning py-3">
+          <h5 class="mb-2"><i class="fas fa-exclamation-triangle me-2"></i> Acesso Restrito</h5>
+          <p class="mb-0">Apenas o usuário administrador (<strong>kauanlauer</strong>) pode cadastrar novos usuários no sistema. 
+          Por favor, faça login com uma conta de administrador para acessar esta funcionalidade.</p>
         </div>
-        
-        <form id="login-form">
-          <div class="mb-3">
-            <label for="username" class="form-label">Usuário</label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="fas fa-user"></i></span>
-              <input type="text" class="form-control" id="username" placeholder="Digite seu usuário" required>
-            </div>
-          </div>
-          
-          <div class="mb-3">
-            <label for="password" class="form-label">Senha</label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="fas fa-lock"></i></span>
-              <input type="password" class="form-control" id="password" placeholder="Digite sua senha" required>
-              <button class="btn btn-outline-secondary toggle-password" type="button">
-                <i class="fas fa-eye"></i>
-              </button>
-            </div>
-          </div>
-          
-          <div class="remember-forgot">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="remember">
-              <label class="form-check-label" for="remember">
-                Lembrar-me
-              </label>
-            </div>
-            <a href="#" class="text-decoration-none">Esqueceu a senha?</a>
-          </div>
-          
-          <button type="submit" class="btn btn-primary btn-login w-100">
-            <i class="fas fa-sign-in-alt me-2"></i> Entrar
-          </button>
-        </form>
       </div>
-      
-      <div class="login-footer">
-        &copy; 2025 TI Service CRM. Todos os direitos reservados.
+    </div>
+    
+    <!-- Formulário de cadastro -->
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card mb-4">
+          <div class="card-header">
+            <h4 class="mb-0"><i class="fas fa-user-plus me-2"></i> Cadastro de Usuários</h4>
+          </div>
+          <div class="card-body">
+            <!-- Alertas -->
+            <div id="success-alert" class="alert alert-success d-none" role="alert">
+              <i class="fas fa-check-circle me-2"></i> <span id="success-message"></span>
+            </div>
+            
+            <div id="error-alert" class="alert alert-danger d-none" role="alert">
+              <i class="fas fa-exclamation-circle me-2"></i> <span id="error-message"></span>
+            </div>
+            
+            <!-- Formulário -->
+            <form id="user-form">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="username" class="form-label">Nome de Usuário</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                    <input type="text" class="form-control" id="username" placeholder="Digite o nome de usuário" required>
+                  </div>
+                  <div class="form-text">Nome para login no sistema</div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                  <label for="password" class="form-label">Senha</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                    <input type="password" class="form-control" id="password" placeholder="Digite a senha" required>
+                    <button class="btn btn-outline-secondary toggle-password" type="button">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="fullname" class="form-label">Nome Completo</label>
+                  <input type="text" class="form-control" id="fullname" placeholder="Digite o nome completo" required>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                  <label for="role" class="form-label">Cargo</label>
+                  <select class="form-select" id="role" required>
+                    <option value="">Selecione um cargo</option>
+                    <option value="Administrador">Administrador</option>
+                    <option value="Suporte">Suporte</option>
+                    <option value="Técnico">Técnico</option>
+                    <option value="Atendente">Atendente</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="row align-items-center mb-4">
+                <div class="col-md-6">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="temp-user">
+                    <label class="form-check-label" for="temp-user">
+                      <strong>Usuário Temporário</strong>
+                    </label>
+                  </div>
+                  <div class="form-text">Usuários temporários serão automaticamente excluídos após a data de expiração</div>
+                </div>
+                
+                <div class="col-md-6 d-none" id="expiration-group">
+                  <label for="expiration-date" class="form-label">Data de Expiração</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                    <input type="text" class="form-control" id="expiration-date" placeholder="Selecione a data e hora">
+                  </div>
+                </div>
+              </div>
+              
+              <div class="d-grid">
+                <button type="submit" class="btn btn-primary" id="save-btn">
+                  <i class="fas fa-save me-2"></i> Cadastrar Usuário
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Tabela de usuários recém-cadastrados -->
+    <div class="row">
+      <div class="col-md-12">
+        <div class="table-container">
+          <h5 class="mb-3"><i class="fas fa-users me-2"></i> Usuários Cadastrados Recentemente</h5>
+          
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Usuário</th>
+                  <th>Nome Completo</th>
+                  <th>Cargo</th>
+                  <th>Status</th>
+                  <th>Data de Expiração</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="users-table">
+                <tr>
+                  <td colspan="6" class="text-center py-3">Carregando usuários...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <div class="text-end mt-3">
+            <a href="painel.html" class="btn btn-outline-primary btn-sm">
+              <i class="fas fa-tachometer-alt me-1"></i> Ir para o Dashboard
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -255,107 +341,341 @@
       const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkaGZ0bnJrc3Jhd2FhaG9xZ3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE5ODA3NDQsImV4cCI6MjA1NzU1Njc0NH0.v7ItKQTkx9TNGoPBIlsgcwYUQ3jA8PlY1SaIj6bH5qA';
       const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       
-      // Toggle de visibilidade da senha
-      const togglePassword = document.querySelector('.toggle-password');
+      // Elementos do DOM
+      const userForm = document.getElementById('user-form');
+      const saveBtn = document.getElementById('save-btn');
+      const usersTable = document.getElementById('users-table');
+      const tempUserCheck = document.getElementById('temp-user');
+      const expirationGroup = document.getElementById('expiration-group');
+      const togglePasswordBtn = document.querySelector('.toggle-password');
       const passwordInput = document.getElementById('password');
+      const authWarning = document.getElementById('auth-warning');
+      const currentUsername = document.getElementById('current-username');
+      const successAlert = document.getElementById('success-alert');
+      const errorAlert = document.getElementById('error-alert');
+      const successMessage = document.getElementById('success-message');
+      const errorMessage = document.getElementById('error-message');
       
-      togglePassword.addEventListener('click', function() {
+      // Variáveis globais
+      let isAuthorized = false;
+      let currentUser = null;
+      
+      // Inicializar o date picker
+      const datePicker = flatpickr('#expiration-date', {
+        enableTime: true,
+        dateFormat: 'Y-m-d H:i',
+        minDate: 'today',
+        time_24hr: true,
+        locale: 'pt'
+      });
+      
+      // Verificar autenticação
+      function checkAuth() {
+        const isAuthenticated = sessionStorage.getItem('authenticated');
+        const username = sessionStorage.getItem('username');
+        
+        if (!isAuthenticated || !username) {
+          window.location.href = 'index.html';
+          return;
+        }
+        
+        currentUsername.textContent = username;
+        currentUser = username;
+        
+        // Verificar se é o usuário autorizado
+        if (username !== 'kauanlauer') {
+          authWarning.classList.remove('d-none');
+          saveBtn.disabled = true;
+          userForm.querySelectorAll('input, select').forEach(el => {
+            el.disabled = true;
+          });
+          isAuthorized = false;
+        } else {
+          authWarning.classList.add('d-none');
+          saveBtn.disabled = false;
+          isAuthorized = true;
+        }
+        
+        // Carregar usuários
+        loadUsers();
+      }
+      
+      // Carregar usuários
+      async function loadUsers() {
+        try {
+          const { data: users, error } = await supabase
+            .from('usuarios')
+            .select('*')
+            .order('data_criacao', { ascending: false })
+            .limit(10);
+          
+          if (error) throw error;
+          
+          renderUsersTable(users);
+        } catch (error) {
+          console.error('Erro ao carregar usuários:', error);
+          showAlert('Erro ao carregar a lista de usuários.', 'error');
+        }
+      }
+      
+      // Renderizar tabela de usuários
+      function renderUsersTable(users) {
+        if (!users || users.length === 0) {
+          usersTable.innerHTML = '<tr><td colspan="6" class="text-center py-3">Nenhum usuário cadastrado recentemente.</td></tr>';
+          return;
+        }
+        
+        const currentDate = new Date();
+        let html = '';
+        
+        users.forEach(user => {
+          const isExpired = user.data_expiracao && new Date(user.data_expiracao) < currentDate;
+          const isTemporary = user.is_temporario;
+          
+          let statusBadge = '';
+          if (isExpired) {
+            statusBadge = '<span class="badge badge-danger">Expirado</span>';
+          } else if (isTemporary) {
+            statusBadge = '<span class="badge badge-warning">Temporário</span>';
+          } else {
+            statusBadge = '<span class="badge badge-success">Ativo</span>';
+          }
+          
+          html += `
+            <tr>
+              <td>${user.username}</td>
+              <td>${user.nome_completo || '-'}</td>
+              <td>${user.cargo || '-'}</td>
+              <td>${statusBadge}</td>
+              <td>${user.data_expiracao ? formatDate(user.data_expiracao) : '-'}</td>
+              <td>
+                ${isAuthorized ? `
+                  <i class="fas fa-trash-alt user-action delete" data-id="${user.id}" title="Excluir usuário"></i>
+                ` : '-'}
+              </td>
+            </tr>
+          `;
+        });
+        
+        usersTable.innerHTML = html;
+        
+        // Adicionar event listeners aos botões de ação
+        if (isAuthorized) {
+          document.querySelectorAll('.user-action.delete').forEach(btn => {
+            btn.addEventListener('click', function() {
+              const userId = this.getAttribute('data-id');
+              deleteUser(userId);
+            });
+          });
+        }
+      }
+      
+      // Cadastrar novo usuário
+      async function saveUser(userData) {
+        try {
+          const { data, error } = await supabase
+            .from('usuarios')
+            .insert([userData])
+            .select();
+          
+          if (error) throw error;
+          
+          // Resetar formulário
+          userForm.reset();
+          expirationGroup.classList.add('d-none');
+          
+          // Mostrar mensagem de sucesso
+          showAlert('Usuário cadastrado com sucesso!', 'success');
+          
+          // Recarregar usuários
+          loadUsers();
+          
+          return true;
+        } catch (error) {
+          console.error('Erro ao cadastrar usuário:', error);
+          
+          if (error.code === '23505') {
+            showAlert('Nome de usuário já existe. Por favor, escolha outro nome de usuário.', 'error');
+          } else {
+            showAlert('Erro ao cadastrar usuário: ' + error.message, 'error');
+          }
+          
+          return false;
+        }
+      }
+      
+      // Excluir usuário
+      async function deleteUser(userId) {
+        if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
+        
+        try {
+          const { error } = await supabase
+            .from('usuarios')
+            .delete()
+            .eq('id', userId);
+          
+          if (error) throw error;
+          
+          showAlert('Usuário excluído com sucesso!', 'success');
+          loadUsers();
+        } catch (error) {
+          console.error('Erro ao excluir usuário:', error);
+          showAlert('Erro ao excluir usuário: ' + error.message, 'error');
+        }
+      }
+      
+      // Mostrar alerta
+      function showAlert(message, type) {
+        if (type === 'success') {
+          successMessage.textContent = message;
+          successAlert.classList.remove('d-none');
+          errorAlert.classList.add('d-none');
+          
+          // Esconder após 3 segundos
+          setTimeout(() => {
+            successAlert.classList.add('d-none');
+          }, 3000);
+        } else {
+          errorMessage.textContent = message;
+          errorAlert.classList.remove('d-none');
+          successAlert.classList.add('d-none');
+          
+          // Adicionar animação de shake
+          errorAlert.classList.add('shake');
+          setTimeout(() => {
+            errorAlert.classList.remove('shake');
+          }, 500);
+          
+          // Esconder após 5 segundos
+          setTimeout(() => {
+            errorAlert.classList.add('d-none');
+          }, 5000);
+        }
+      }
+      
+      // Formatar data
+      function formatDate(dateString) {
+        if (!dateString) return '-';
+        
+        const date = new Date(dateString);
+        return new Intl.DateTimeFormat('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        }).format(date);
+      }
+      
+      // Event listeners
+      
+      // Toggle de usuário temporário
+      tempUserCheck.addEventListener('change', function() {
+        if (this.checked) {
+          expirationGroup.classList.remove('d-none');
+        } else {
+          expirationGroup.classList.add('d-none');
+        }
+      });
+      
+      // Toggle de visibilidade da senha
+      togglePasswordBtn.addEventListener('click', function() {
         const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
         passwordInput.setAttribute('type', type);
         this.querySelector('i').classList.toggle('fa-eye');
         this.querySelector('i').classList.toggle('fa-eye-slash');
       });
       
-      // Validação do login
-      const loginForm = document.getElementById('login-form');
-      const loginAlert = document.getElementById('login-alert');
-      const loginCard = document.querySelector('.login-card');
-      
-      loginForm.addEventListener('submit', async function(e) {
+      // Submissão do formulário
+      userForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
+        if (!isAuthorized) {
+          showAlert('Você não tem permissão para cadastrar usuários.', 'error');
+          return;
+        }
+        
+        // Obter valores do formulário
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const fullname = document.getElementById('fullname').value.trim();
+        const role = document.getElementById('role').value;
+        const isTemporary = document.getElementById('temp-user').checked;
+        const expirationDate = document.getElementById('expiration-date').value;
+        
+        // Validações
+        if (!username || !password || !fullname || !role) {
+          showAlert('Preencha todos os campos obrigatórios.', 'error');
+          return;
+        }
+        
+        if (isTemporary && !expirationDate) {
+          showAlert('Para usuários temporários, informe a data de expiração.', 'error');
+          return;
+        }
+        
+        // Preparar dados do usuário
+        const userData = {
+          username,
+          password,
+          nome_completo: fullname,
+          cargo: role,
+          data_criacao: new Date().toISOString(),
+          is_temporario: isTemporary,
+          data_expiracao: isTemporary ? new Date(expirationDate).toISOString() : null
+        };
+        
+        // Salvar usuário
+        await saveUser(userData);
+      });
+      
+      // Inicializar a página
+      checkAuth();
+      
+      // Verificar e remover usuários expirados
+      async function checkExpiredUsers() {
+        if (!isAuthorized) return;
         
         try {
-          // Buscar o usuário pelo nome de usuário na tabela de usuários
-          const { data: users, error: fetchError } = await supabase
+          const currentDate = new Date().toISOString();
+          
+          const { data: expiredUsers, error } = await supabase
             .from('usuarios')
-            .select('*')
-            .eq('username', username)
-            .single();
+            .select('id')
+            .eq('is_temporario', true)
+            .lt('data_expiracao', currentDate);
           
-          if (fetchError || !users) {
-            throw new Error('Usuário não encontrado');
-          }
+          if (error) throw error;
           
-          // Verificar se o usuário está expirado
-          if (users.is_temporario && users.data_expiracao) {
-            const expirationDate = new Date(users.data_expiracao);
-            const currentDate = new Date();
+          if (expiredUsers && expiredUsers.length > 0) {
+            console.log(`Encontrados ${expiredUsers.length} usuários expirados para remoção.`);
             
-            if (expirationDate < currentDate) {
-              throw new Error('Usuário expirado');
-            }
-          }
-          
-          // Verificar a senha
-          if (users.password === password) {
-            // Login válido
-            loginAlert.classList.add('d-none');
+            const expiredIds = expiredUsers.map(user => user.id);
             
-            // Atualizar último login
-            const { error: updateError } = await supabase
+            const { error: deleteError } = await supabase
               .from('usuarios')
-              .update({ ultimo_login: new Date().toISOString() })
-              .eq('id', users.id);
-              
-            if (updateError) {
-              console.error('Erro ao atualizar último login:', updateError);
+              .delete()
+              .in('id', expiredIds);
+            
+            if (deleteError) throw deleteError;
+            
+            console.log(`${expiredUsers.length} usuários expirados foram removidos.`);
+            
+            if (expiredUsers.length > 0) {
+              showAlert(`${expiredUsers.length} usuários temporários expirados foram removidos automaticamente.`, 'success');
+              loadUsers();
             }
-            
-            // Armazenar informações de autenticação
-            sessionStorage.setItem('authenticated', 'true');
-            sessionStorage.setItem('username', username);
-            sessionStorage.setItem('user_id', users.id);
-            sessionStorage.setItem('user_role', users.cargo || '');
-            
-            // Redireciona para a página principal
-            window.location.href = 'painel.html';
-          } else {
-            throw new Error('Senha incorreta');
           }
         } catch (error) {
-          console.error('Erro durante o login:', error);
-          
-          // Login inválido
-          loginAlert.classList.remove('d-none');
-          loginCard.classList.add('shake');
-          
-          // Remove a classe shake após a animação terminar
-          setTimeout(() => {
-            loginCard.classList.remove('shake');
-          }, 500);
+          console.error('Erro ao verificar usuários expirados:', error);
         }
-      });
-      
-      // Verifica se existe um usuário salvo
-      const rememberCheck = document.getElementById('remember');
-      const usernameInput = document.getElementById('username');
-      
-      if (localStorage.getItem('rememberedUser')) {
-        usernameInput.value = localStorage.getItem('rememberedUser');
-        rememberCheck.checked = true;
       }
       
-      // Salva o usuário se lembrar-me estiver marcado
-      loginForm.addEventListener('submit', function() {
-        if (rememberCheck.checked) {
-          localStorage.setItem('rememberedUser', usernameInput.value);
-        } else {
-          localStorage.removeItem('rememberedUser');
-        }
-      });
+      // Verificar usuários expirados na inicialização
+      setTimeout(checkExpiredUsers, 1000);
+      
+      // Verificar a cada 10 minutos
+      setInterval(checkExpiredUsers, 10 * 60 * 1000);
     });
   </script>
 </body>
