@@ -178,113 +178,641 @@
     <script type="module" src="./js/scripts.js"></script>
      <head>
       <script>
-        // Verifica autenticação imediatamente
-        if (sessionStorage.getItem('authenticated') !== 'true') {
-          window.location.href = 'index.html';
-        }
+        // Supabase
+const SUPABASE_URL = 'https://rdhftnrksrawaahoqgpo.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkaGZ0bnJrc3Jhd2FhaG9xZ3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE5ODA3NDQsImV4cCI6MjA1NzU1Njc0NH0.v7ItKQTkx9TNGoPBIlsgcwYUQ3jA8PlY1SaIj6bH5qA';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-
-
-        // Adicione este código após inicializar o modal na função loadServicos()
-document.getElementById('btn-salvar-servico').addEventListener('click', async () => {
-  const nome = document.getElementById('servico-nome').value.trim();
-  const descricao = document.getElementById('servico-descricao').value.trim();
-  const preco_padrao = parseFloat(document.getElementById('servico-preco').value);
-  const tempo_garantia_dias = parseInt(document.getElementById('servico-garantia').value);
+document.addEventListener('DOMContentLoaded', function() {
+  // Verificar autenticação
+  checkAuth();
   
-  if (!nome || isNaN(preco_padrao)) {
-    alert('Por favor, preencha todos os campos obrigatórios.');
+  // Menu mobile toggle
+  setupMobileMenu();
+  
+  // Configurar eventos dos links do menu
+  setupMenuLinks();
+  
+  // Carregar o dashboard (conteúdo inicial)
+  loadDashboard();
+});
+
+// Verificar autenticação
+function checkAuth() {
+  const authenticated = sessionStorage.getItem('authenticated');
+  const username = sessionStorage.getItem('username');
+  const userRole = sessionStorage.getItem('user_role');
+  const userId = sessionStorage.getItem('user_id');
+  
+  console.log("Verificando autenticação:", { authenticated, username, userRole, userId });
+  
+  if (authenticated !== 'true' || !username) {
+    console.log("Usuário não autenticado, redirecionando para login");
+    window.location.href = 'index.html';
     return;
   }
   
-  try {
-    const novoServico = await addServico({
-      nome,
-      descricao,
-      preco_padrao,
-      tempo_garantia_dias
+  // Exibir informações do usuário
+  setupUserInfo(username, userRole);
+  
+  // Configurar acesso aos menus com base na permissão
+  setupMenuAccess(username, userRole);
+}
+
+// Configurar as informações do usuário na sidebar
+function setupUserInfo(username, userRole) {
+  const userInfo = document.createElement('div');
+  userInfo.className = 'd-flex align-items-center mb-4';
+  userInfo.innerHTML = `
+    <div class="user-avatar me-2">
+      <i class="fas fa-user-circle fa-2x text-primary"></i>
+    </div>
+    <div>
+      <div class="fw-bold">${username}</div>
+      <div class="small text-muted">${userRole || 'Usuário'}</div>
+    </div>
+    <div class="ms-auto">
+      <button id="logout-button" class="btn btn-sm btn-outline-danger">
+        <i class="fas fa-sign-out-alt"></i>
+      </button>
+    </div>
+  `;
+  
+  // Adicionar à sidebar antes da navegação
+  const sidebar = document.querySelector('.position-sticky');
+  sidebar.insertBefore(userInfo, document.querySelector('.position-sticky .text-center'));
+  
+  // Adicionar evento de logout
+  document.getElementById('logout-button').addEventListener('click', handleLogout);
+}
+
+// Configurar acesso aos menus com base na permissão
+function setupMenuAccess(username, userRole) {
+  // Mostrar ou ocultar menu de usuários com base na permissão
+  const userManagementMenu = document.querySelector('#userDropdown').parentNode;
+  
+  if (username === 'kauanlauer' || userRole === 'Administrador') {
+    userManagementMenu.classList.remove('d-none');
+  } else {
+    userManagementMenu.classList.add('d-none');
+  }
+}
+
+// Configurar os eventos dos links do menu
+function setupMenuLinks() {
+  // Link do Dashboard
+  document.getElementById('dashboard-link').addEventListener('click', function(e) {
+    e.preventDefault();
+    loadDashboard();
+    setActiveLink(this);
+  });
+  
+  // Link de Clientes
+  document.getElementById('clientes-link').addEventListener('click', function(e) {
+    e.preventDefault();
+    loadClientes();
+    setActiveLink(this);
+  });
+  
+  // Link de Serviços
+  document.getElementById('servicos-link').addEventListener('click', function(e) {
+    e.preventDefault();
+    loadServicos();
+    setActiveLink(this);
+  });
+  
+  // Link de Ordens de Serviço
+  document.getElementById('ordens-link').addEventListener('click', function(e) {
+    e.preventDefault();
+    loadOrdens();
+    setActiveLink(this);
+  });
+  
+  // Link de Garantias
+  document.getElementById('garantias-link').addEventListener('click', function(e) {
+    e.preventDefault();
+    loadGarantias();
+    setActiveLink(this);
+  });
+  
+  // Link de Financeiro
+  document.getElementById('financeiro-link').addEventListener('click', function(e) {
+    e.preventDefault();
+    loadFinanceiro();
+    setActiveLink(this);
+  });
+}
+
+// Configurar o menu mobile
+function setupMobileMenu() {
+  const menuToggle = document.querySelector('.mobile-menu-toggle');
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.querySelector('.sidebar-overlay');
+  
+  if (menuToggle && sidebar && overlay) {
+    menuToggle.addEventListener('click', function() {
+      sidebar.classList.toggle('show');
+      overlay.classList.toggle('show');
     });
     
-    if (novoServico) {
-      modalNovoServico.hide();
-      showToast('Serviço adicionado com sucesso!', 'Sucesso', 'success');
-      loadServicos(); // Recarregar a lista de serviços
-    } else {
-      alert('Erro ao adicionar serviço.');
-    }
-  } catch (error) {
-    console.error('Erro ao salvar serviço:', error);
-    showToast('Erro ao adicionar serviço: ' + error.message, 'Erro', 'danger');
+    overlay.addEventListener('click', function() {
+      sidebar.classList.remove('show');
+      overlay.classList.remove('show');
+    });
   }
-});
-      </script>
-      <script>
-        // Menu mobile toggle
-        document.addEventListener("DOMContentLoaded", function() {
-          const loginForm = document.getElementById('login-form'); // Ajuste para o ID do seu formulário
-          
-          loginForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value.trim(); // Ajuste para o ID do seu campo
-            const password = document.getElementById('password').value.trim(); // Ajuste para o ID do seu campo
-            
-            try {
-              // Realizar a autenticação no Supabase
-              const { data, error } = await supabaseClient
-                .from('usuarios')
-                .select('*')
-                .eq('username', username)
-                .eq('password', password)
-                .single();
-              
-              if (error) throw error;
-              
-              if (data) {
-                // Registrar usuário no sessionStorage
-                sessionStorage.setItem('authenticated', 'true');
-                sessionStorage.setItem('username', username);
-                sessionStorage.setItem('user_id', data.id);
-                sessionStorage.setItem('user_role', data.cargo);
-                
-                console.log('Login bem-sucedido:', {
-                  authenticated: true,
-                  username: username,
-                  user_id: data.id,
-                  user_role: data.cargo
-                });
-                
-                // Redirecionar para o painel
-                window.location.href = 'painel.html';
-              } else {
-                alert('Nome de usuário ou senha incorretos.');
-              }
-            } catch (error) {
-              console.error('Erro no login:', error);
-              alert('Erro ao tentar fazer login. Tente novamente.');
+}
+
+// Definir o link ativo no menu
+function setActiveLink(activeLink) {
+  // Remover a classe active de todos os links
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.classList.remove('active');
+  });
+  
+  // Adicionar a classe active ao link clicado
+  activeLink.classList.add('active');
+}
+
+// Carregar o Dashboard
+function loadDashboard() {
+  const username = sessionStorage.getItem('username');
+  const mainContent = document.getElementById('main-content-area');
+  
+  mainContent.innerHTML = `
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+      <h1 class="h3 mb-0 text-gray-800">Bem-vindo, ${username}!</h1>
+      <div>
+        <button class="btn btn-sm btn-outline-primary me-2" onclick="verificarSessao()">
+          <i class="fas fa-info-circle me-1"></i> Verificar Sessão
+        </button>
+        <button class="btn btn-sm btn-primary">
+          <i class="fas fa-download me-1"></i> Gerar Relatório
+        </button>
+      </div>
+    </div>
+    
+    <!-- Estatísticas -->
+    <div class="row">
+      <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+          <div class="card-body">
+            <div class="row no-gutters align-items-center">
+              <div class="col mr-2">
+                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                  Clientes Ativos
+                </div>
+                <div class="h5 mb-0 font-weight-bold text-gray-800">24</div>
+              </div>
+              <div class="col-auto">
+                <i class="fas fa-users fa-2x text-gray-300"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+          <div class="card-body">
+            <div class="row no-gutters align-items-center">
+              <div class="col mr-2">
+                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                  Serviços Ativos
+                </div>
+                <div class="h5 mb-0 font-weight-bold text-gray-800">12</div>
+              </div>
+              <div class="col-auto">
+                <i class="fas fa-tools fa-2x text-gray-300"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+          <div class="card-body">
+            <div class="row no-gutters align-items-center">
+              <div class="col mr-2">
+                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                  OS em Andamento
+                </div>
+                <div class="h5 mb-0 font-weight-bold text-gray-800">7</div>
+              </div>
+              <div class="col-auto">
+                <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+          <div class="card-body">
+            <div class="row no-gutters align-items-center">
+              <div class="col mr-2">
+                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                  Garantias Ativas
+                </div>
+                <div class="h5 mb-0 font-weight-bold text-gray-800">18</div>
+              </div>
+              <div class="col-auto">
+                <i class="fas fa-shield-alt fa-2x text-gray-300"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Gráficos -->
+    <div class="row">
+      <div class="col-xl-8 col-lg-7">
+        <div class="card shadow mb-4">
+          <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Faturamento Mensal</h6>
+          </div>
+          <div class="card-body">
+            <div class="chart-area">
+              <canvas id="revenueChart" height="320"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-xl-4 col-lg-5">
+        <div class="card shadow mb-4">
+          <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Distribuição de Serviços</h6>
+          </div>
+          <div class="card-body">
+            <div class="chart-pie">
+              <canvas id="servicesChart" height="300"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Inicializar os gráficos
+  initializeCharts();
+}
+
+// Inicializar os gráficos do dashboard
+function initializeCharts() {
+  // Gráfico de faturamento mensal
+  const revenueCtx = document.getElementById('revenueChart');
+  if (revenueCtx) {
+    new Chart(revenueCtx, {
+      type: 'line',
+      data: {
+        labels: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"],
+        datasets: [{
+          label: "Faturamento",
+          lineTension: 0.3,
+          backgroundColor: "rgba(78, 115, 223, 0.05)",
+          borderColor: "rgba(78, 115, 223, 1)",
+          pointRadius: 3,
+          pointBackgroundColor: "rgba(78, 115, 223, 1)",
+          pointBorderColor: "rgba(78, 115, 223, 1)",
+          pointHoverRadius: 3,
+          pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
+          pointHoverBorderColor: "rgba(78, 115, 223, 1)",
+          pointHitRadius: 10,
+          pointBorderWidth: 2,
+          data: [0, 10000, 5000, 15000, 10000, 20000, 15000, 25000, 20000, 30000, 25000, 40000],
+        }],
+      },
+      options: {
+        maintainAspectRatio: false,
+        layout: {
+          padding: {
+            left: 10,
+            right: 25,
+            top: 25,
+            bottom: 0
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              display: false,
+              drawBorder: false
+            },
+            ticks: {
+              maxTicksLimit: 12
             }
-          });
-          
-          // Limpar dados de autenticação ao carregar a página de login
-          sessionStorage.removeItem('authenticated');
-          sessionStorage.removeItem('username');
-          sessionStorage.removeItem('user_id');
-          sessionStorage.removeItem('user_role');
-        });
-        
-        // Para depuração: Adicione este código temporariamente para ver o estado da sessão
-        // Adicione em um botão ou link na página de login para teste
-        function verificarSessao() {
-          console.log({
-            authenticated: sessionStorage.getItem('authenticated'),
-            username: sessionStorage.getItem('username'),
-            user_id: sessionStorage.getItem('user_id'),
-            user_role: sessionStorage.getItem('user_role')
-          });
-          
-          alert('Verifique o console para ver os dados da sessão');
+          },
+          y: {
+            ticks: {
+              maxTicksLimit: 5,
+              padding: 10,
+              callback: function(value) {
+                return 'R$ ' + value.toLocaleString('pt-BR');
+              }
+            },
+            grid: {
+              color: "rgba(234, 236, 244, 1)",
+              drawBorder: false,
+              borderDash: [2],
+              borderDashOffset: [2]
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            titleMarginBottom: 10,
+            titleFontSize: 14,
+            bodyFontSize: 14,
+            backgroundColor: "rgb(255,255,255)",
+            bodyColor: "#858796",
+            borderColor: '#dddfeb',
+            borderWidth: 1,
+            padding: 15,
+            displayColors: false,
+            callbacks: {
+              label: function(tooltipItem) {
+                return 'R$ ' + tooltipItem.raw.toLocaleString('pt-BR');
+              }
+            }
+          }
         }
-        
+      }
+    });
+  }
+  
+  // Gráfico de distribuição de serviços
+  const servicesCtx = document.getElementById('servicesChart');
+  if (servicesCtx) {
+    new Chart(servicesCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ["Manutenção", "Instalação", "Consultoria", "Desenvolvimento"],
+        datasets: [{
+          data: [35, 25, 20, 20],
+          backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e'],
+          hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf', '#dda20a'],
+          hoverBorderColor: "rgba(234, 236, 244, 1)",
+        }],
+      },
+      options: {
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              usePointStyle: true,
+              padding: 20
+            }
+          },
+          tooltip: {
+            bodyFontSize: 14,
+            callbacks: {
+              label: function(tooltipItem) {
+                return tooltipItem.label + ': ' + tooltipItem.raw + '%';
+              }
+            }
+          }
+        },
+        cutout: '70%'
+      }
+    });
+  }
+}
+
+// Carregar a página de Clientes
+function loadClientes() {
+  const mainContent = document.getElementById('main-content-area');
+  mainContent.innerHTML = `
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+      <h1 class="h3 mb-0 text-gray-800">Gerenciamento de Clientes</h1>
+      <button class="btn btn-primary">
+        <i class="fas fa-plus-circle me-1"></i> Novo Cliente
+      </button>
+    </div>
+    
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Lista de Clientes</h6>
+      </div>
+      <div class="card-body">
+        <p>Conteúdo da seção de Clientes será implementado em breve.</p>
+      </div>
+    </div>
+  `;
+  
+  showToast("Funcionalidade de Clientes em desenvolvimento", "Informação", "info");
+}
+
+// Carregar a página de Serviços
+function loadServicos() {
+  const mainContent = document.getElementById('main-content-area');
+  mainContent.innerHTML = `
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+      <h1 class="h3 mb-0 text-gray-800">Gerenciamento de Serviços</h1>
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNovoServico">
+        <i class="fas fa-plus-circle me-1"></i> Novo Serviço
+      </button>
+    </div>
+    
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Lista de Serviços</h6>
+      </div>
+      <div class="card-body">
+        <p>Conteúdo da seção de Serviços será implementado em breve.</p>
+      </div>
+    </div>
+  `;
+  
+  // Inicializar o modal de novo serviço
+  initializeServicoModal();
+  
+  showToast("Funcionalidade de Serviços em desenvolvimento", "Informação", "info");
+}
+
+// Inicializar o modal de novo serviço
+function initializeServicoModal() {
+  const modalNovoServico = new bootstrap.Modal(document.getElementById('modalNovoServico'));
+  
+  document.getElementById('btn-salvar-servico').addEventListener('click', async () => {
+    const nome = document.getElementById('servico-nome').value.trim();
+    const descricao = document.getElementById('servico-descricao').value.trim();
+    const preco_padrao = parseFloat(document.getElementById('servico-preco').value);
+    const tempo_garantia_dias = parseInt(document.getElementById('servico-garantia').value);
+    
+    if (!nome || isNaN(preco_padrao)) {
+      alert('Por favor, preencha todos os campos obrigatórios.');
+      return;
+    }
+    
+    try {
+      const novoServico = await addServico({
+        nome,
+        descricao,
+        preco_padrao,
+        tempo_garantia_dias
+      });
+      
+      if (novoServico) {
+        modalNovoServico.hide();
+        showToast('Serviço adicionado com sucesso!', 'Sucesso', 'success');
+        loadServicos(); // Recarregar a lista de serviços
+      } else {
+        alert('Erro ao adicionar serviço.');
+      }
+    } catch (error) {
+      console.error('Erro ao salvar serviço:', error);
+      showToast('Erro ao adicionar serviço: ' + error.message, 'Erro', 'danger');
+    }
+  });
+}
+
+// Adicionar um novo serviço
+async function addServico(servicoData) {
+  try {
+    const { data, error } = await supabaseClient
+      .from('servicos')
+      .insert([servicoData])
+      .select();
+    
+    if (error) throw error;
+    return data[0];
+  } catch (error) {
+    console.error('Erro ao adicionar serviço:', error);
+    throw error;
+  }
+}
+
+// Carregar a página de Ordens de Serviço
+function loadOrdens() {
+  const mainContent = document.getElementById('main-content-area');
+  mainContent.innerHTML = `
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+      <h1 class="h3 mb-0 text-gray-800">Ordens de Serviço</h1>
+      <button class="btn btn-primary">
+        <i class="fas fa-plus-circle me-1"></i> Nova Ordem
+      </button>
+    </div>
+    
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Lista de Ordens</h6>
+      </div>
+      <div class="card-body">
+        <p>Conteúdo da seção de Ordens de Serviço será implementado em breve.</p>
+      </div>
+    </div>
+  `;
+  
+  showToast("Funcionalidade de Ordens de Serviço em desenvolvimento", "Informação", "info");
+}
+
+// Carregar a página de Garantias
+function loadGarantias() {
+  const mainContent = document.getElementById('main-content-area');
+  mainContent.innerHTML = `
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+      <h1 class="h3 mb-0 text-gray-800">Garantias</h1>
+    </div>
+    
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Garantias Ativas</h6>
+      </div>
+      <div class="card-body">
+        <p>Conteúdo da seção de Garantias será implementado em breve.</p>
+      </div>
+    </div>
+  `;
+  
+  showToast("Funcionalidade de Garantias em desenvolvimento", "Informação", "info");
+}
+
+// Carregar a página de Financeiro
+function loadFinanceiro() {
+  const mainContent = document.getElementById('main-content-area');
+  mainContent.innerHTML = `
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+      <h1 class="h3 mb-0 text-gray-800">Financeiro</h1>
+      <button class="btn btn-primary">
+        <i class="fas fa-download me-1"></i> Gerar Relatório
+      </button>
+    </div>
+    
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Resumo Financeiro</h6>
+      </div>
+      <div class="card-body">
+        <p>Conteúdo da seção Financeira será implementado em breve.</p>
+      </div>
+    </div>
+  `;
+  
+  showToast("Funcionalidade Financeira em desenvolvimento", "Informação", "info");
+}
+
+// Função de logout
+function handleLogout() {
+  // Limpar dados de autenticação
+  sessionStorage.removeItem('authenticated');
+  sessionStorage.removeItem('username');
+  sessionStorage.removeItem('user_id');
+  sessionStorage.removeItem('user_role');
+  
+  // Redirecionar para a página de login
+  window.location.href = 'index.html';
+}
+
+// Função para exibir toast de notificação
+function showToast(message, title = 'Notificação', type = 'info') {
+  const toastEl = document.getElementById('toast-notification');
+  const toastTitle = document.getElementById('toast-title');
+  const toastMessage = document.getElementById('toast-message');
+  const toastTime = document.getElementById('toast-time');
+  
+  // Configurar classe de cor com base no tipo
+  toastEl.className = 'toast';
+  toastEl.classList.add(`bg-${type === 'danger' ? 'danger' : type === 'success' ? 'success' : 'light'}`);
+  if (type !== 'danger' && type !== 'success') {
+    toastEl.classList.add('text-dark');
+  } else {
+    toastEl.classList.add('text-white');
+  }
+  
+  // Definir conteúdo
+  toastTitle.textContent = title;
+  toastMessage.textContent = message;
+  toastTime.textContent = new Date().toLocaleTimeString();
+  
+  // Exibir toast
+  const toast = new bootstrap.Toast(toastEl);
+  toast.show();
+}
+
+// Verificar e mostrar dados da sessão (para depuração)
+function verificarSessao() {
+  const sessaoInfo = {
+    authenticated: sessionStorage.getItem('authenticated'),
+    username: sessionStorage.getItem('username'),
+    user_id: sessionStorage.getItem('user_id'),
+    user_role: sessionStorage.getItem('user_role')
+  };
+  
+  console.log("Informações da sessão:", sessaoInfo);
+  
+  showToast(
+    `Usuário: ${sessaoInfo.username} (${sessaoInfo.user_role})`,
+    'Dados da sessão',
+    'info'
+  );
+}
       </script>
   </body>
 </html>
