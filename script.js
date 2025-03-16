@@ -1580,6 +1580,14 @@ document.addEventListener("DOMContentLoaded", () => {
       loginPage.style.display = "block";
       dashboardPage.style.display = "none";
     }
+    const configLink = document.querySelector('[data-page="settings"]');
+    if (configLink) {
+      configLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        showActivePage('settings');
+      });
+    }
+    checkAndInitSettings();
   });
 
   // Inicializar tabelas no Supabase
@@ -3439,3 +3447,764 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+
+
+
+
+
+
+
+// Sistema de Configurações para o CRM
+// Adicionar ao arquivo script.js
+
+// Variáveis globais para configurações
+let crmSettings = {
+    general: {
+      companyName: "Meu CRM",
+      itemsPerPage: 10,
+      defaultCurrency: "BRL"
+    },
+    appearance: {
+      theme: "auto", // light, dark, auto
+      primaryColor: "#4361ee"
+    },
+    notifications: {
+      emailNotifications: false,
+      browserNotifications: true,
+      notifyNewOrder: true,
+      notifyOrderStatus: true,
+      notifyWarrantyExpiry: true,
+      notifySyncComplete: false
+    },
+    backup: {
+      autoBackup: false,
+      backupFrequency: "weekly"
+    }
+  };
+  
+  // Função para inicializar o sistema de configurações
+  function initSettings() {
+    console.log("Inicializando configurações do sistema...");
+    
+    // Carregar configurações salvas
+    loadSettings();
+    
+    // Inicializar formulários de configurações
+    setupSettingsForm();
+    
+    // Aplicar configurações atuais
+    applySettings();
+    
+    // Configurar listeners de eventos para os formulários
+    setupSettingsListeners();
+    
+    // Atualizar informações do sistema
+    updateSystemInfo();
+  }
+  // Carregar configurações do localStorage
+  function loadSettings() {
+    const savedSettings = localStorage.getItem('crmSettings');
+    if (savedSettings) {
+      try {
+        const parsedSettings = JSON.parse(savedSettings);
+        // Mesclar configurações salvas com valores padrão
+        crmSettings = {
+          ...crmSettings,
+          ...parsedSettings,
+          general: { ...crmSettings.general, ...parsedSettings.general },
+          appearance: { ...crmSettings.appearance, ...parsedSettings.appearance },
+          notifications: { ...crmSettings.notifications, ...parsedSettings.notifications },
+          backup: { ...crmSettings.backup, ...parsedSettings.backup }
+        };
+      } catch (error) {
+        console.error('Erro ao carregar configurações:', error);
+      }
+    }
+  }
+  
+  // Salvar configurações no localStorage
+  function saveSettings() {
+    try {
+      localStorage.setItem('crmSettings', JSON.stringify(crmSettings));
+      showNotification('Configurações salvas', 'Suas configurações foram salvas com sucesso.', 'success');
+    } catch (error) {
+      console.error('Erro ao salvar configurações:', error);
+      showNotification('Erro ao salvar', 'Não foi possível salvar suas configurações.', 'error');
+    }
+  }
+  
+  // Preencher formulários com valores atuais
+  // Verificar se a função setupSettingsForm está correta (ajustando para garantir que funcione)
+function setupSettingsForm() {
+    try {
+      // Configurações Gerais
+      const companyName = document.getElementById('company-name');
+      if (companyName) companyName.value = crmSettings.general.companyName;
+      
+      const itemsPerPage = document.getElementById('items-per-page');
+      if (itemsPerPage) itemsPerPage.value = crmSettings.general.itemsPerPage;
+      
+      const defaultCurrency = document.getElementById('default-currency');
+      if (defaultCurrency) defaultCurrency.value = crmSettings.general.defaultCurrency;
+      
+      // Aparência
+      const themeInputs = document.querySelectorAll('input[name="theme"]');
+      if (themeInputs.length > 0) {
+        const selectedTheme = document.querySelector(`input[name="theme"][value="${crmSettings.appearance.theme}"]`);
+        if (selectedTheme) selectedTheme.checked = true;
+      }
+      
+      const primaryColor = document.getElementById('primary-color');
+      if (primaryColor) primaryColor.value = crmSettings.appearance.primaryColor;
+      
+      // Notificações
+      const emailNotifications = document.getElementById('email-notifications');
+      if (emailNotifications) emailNotifications.checked = crmSettings.notifications.emailNotifications;
+      
+      const browserNotifications = document.getElementById('browser-notifications');
+      if (browserNotifications) browserNotifications.checked = crmSettings.notifications.browserNotifications;
+      
+      const notifyNewOrder = document.getElementById('notify-new-order');
+      if (notifyNewOrder) notifyNewOrder.checked = crmSettings.notifications.notifyNewOrder;
+      
+      const notifyOrderStatus = document.getElementById('notify-order-status');
+      if (notifyOrderStatus) notifyOrderStatus.checked = crmSettings.notifications.notifyOrderStatus;
+      
+      const notifyWarrantyExpiry = document.getElementById('notify-warranty-expiry');
+      if (notifyWarrantyExpiry) notifyWarrantyExpiry.checked = crmSettings.notifications.notifyWarrantyExpiry;
+      
+      const notifySyncComplete = document.getElementById('notify-sync-complete');
+      if (notifySyncComplete) notifySyncComplete.checked = crmSettings.notifications.notifySyncComplete;
+      
+      // Backup
+      const autoBackup = document.getElementById('auto-backup');
+      if (autoBackup) autoBackup.checked = crmSettings.backup.autoBackup;
+      
+      const backupFrequency = document.getElementById('backup-frequency');
+      if (backupFrequency) backupFrequency.value = crmSettings.backup.backupFrequency;
+      
+      console.log("Formulários de configurações preenchidos com sucesso");
+    } catch (error) {
+      console.error("Erro ao configurar formulários:", error);
+    }
+  }
+  
+  // Aplicar configurações ao sistema
+  function applySettings() {
+    // Aplicar nome da empresa
+    document.querySelector('.logo h1').textContent = crmSettings.general.companyName;
+    document.title = crmSettings.general.companyName;
+    
+    // Aplicar itens por página
+    itemsPerPage = parseInt(crmSettings.general.itemsPerPage);
+    
+    // Aplicar tema
+    applyTheme(crmSettings.appearance.theme);
+    
+    // Aplicar cor primária
+    applyPrimaryColor(crmSettings.appearance.primaryColor);
+    
+    // Aplicar configurações de notificações
+    if (crmSettings.notifications.browserNotifications) {
+      requestNotificationPermission();
+    }
+  }
+  
+  // Aplicar tema (claro, escuro ou automático)
+  function applyTheme(theme) {
+    // Remover qualquer listener anterior de preferência de sistema
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    mediaQuery.removeEventListener('change', handleSystemThemeChange);
+    
+    if (theme === 'auto') {
+      // Tema automático baseado nas preferências do sistema
+      const prefersDark = mediaQuery.matches;
+      document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+      
+      // Adicionar listener para mudanças de preferência do sistema
+      mediaQuery.addEventListener('change', handleSystemThemeChange);
+      
+      // Atualizar switch do tema
+      const themeSwitch = document.getElementById('theme-switch');
+      if (themeSwitch) {
+        themeSwitch.checked = prefersDark;
+      }
+    } else {
+      // Tema fixo (claro ou escuro)
+      document.documentElement.setAttribute('data-theme', theme);
+      
+      // Atualizar switch do tema
+      const themeSwitch = document.getElementById('theme-switch');
+      if (themeSwitch) {
+        themeSwitch.checked = theme === 'dark';
+      }
+    }
+    
+    // Salvar preferência no localStorage
+    localStorage.setItem('theme', theme);
+  }
+  
+  // Lidar com mudanças de tema do sistema quando no modo automático
+  function handleSystemThemeChange(e) {
+    if (crmSettings.appearance.theme === 'auto') {
+      document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+      
+      // Atualizar switch do tema
+      const themeSwitch = document.getElementById('theme-switch');
+      if (themeSwitch) {
+        themeSwitch.checked = e.matches;
+      }
+    }
+  }
+  
+  // Aplicar cor primária personalizada
+  function applyPrimaryColor(color) {
+    // Criar uma style tag para a cor personalizada
+    let style = document.getElementById('custom-theme-colors');
+    if (!style) {
+      style = document.createElement('style');
+      style.id = 'custom-theme-colors';
+      document.head.appendChild(style);
+    }
+    
+    // Gerar variantes da cor
+    const darkColor = adjustColor(color, -20); // Mais escuro
+    const lightColor = adjustColor(color, 45, true); // Mais claro com mais luminosidade
+    
+    // Aplicar cores como variáveis CSS
+    style.textContent = `
+      :root {
+        --primary: ${color};
+        --primary-dark: ${darkColor};
+        --primary-light: ${lightColor};
+      }
+      
+      /* Variáveis do Modo Escuro */
+      [data-theme="dark"] {
+        --primary-light: ${adjustColor(darkColor, 10)};
+        --dark-blue-accent: ${darkColor};
+      }
+    `;
+  }
+  
+  // Ajustar cor (escurecer ou clarear)
+  function adjustColor(hex, amount, lighten = false) {
+    // Converter hex para RGB
+    let r = parseInt(hex.slice(1, 3), 16);
+    let g = parseInt(hex.slice(3, 5), 16);
+    let b = parseInt(hex.slice(5, 7), 16);
+    
+    if (lighten) {
+      // Método HSL para clareamento mais natural
+      let hsl = rgbToHsl(r, g, b);
+      hsl[2] = Math.min(1, hsl[2] + amount / 100); // Aumentar luminosidade
+      const rgb = hslToRgb(hsl[0], hsl[1], hsl[2]);
+      r = rgb[0];
+      g = rgb[1];
+      b = rgb[2];
+    } else {
+      // Escurecer diretamente
+      r = Math.max(0, r - amount);
+      g = Math.max(0, g - amount);
+      b = Math.max(0, b - amount);
+    }
+    
+    // Converter de volta para hex
+    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+  }
+  
+  // Funções auxiliares para conversão de cores
+  function rgbToHsl(r, g, b) {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+    
+    if (max === min) {
+      h = s = 0; // achromatic
+    } else {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      
+      h /= 6;
+    }
+    
+    return [h, s, l];
+  }
+  
+  function hslToRgb(h, s, l) {
+    let r, g, b;
+    
+    if (s === 0) {
+      r = g = b = l; // achromatic
+    } else {
+      const hue2rgb = (p, q, t) => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1/6) return p + (q - p) * 6 * t;
+        if (t < 1/2) return q;
+        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+        return p;
+      };
+      
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      
+      r = hue2rgb(p, q, h + 1/3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1/3);
+    }
+    
+    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+  }
+  
+  // Configurar listeners para os formulários de configurações
+  function setupSettingsListeners() {
+    try {
+      // Formulário de configurações gerais
+      const generalForm = document.getElementById('general-settings-form');
+      if (generalForm) {
+        generalForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          console.log("Salvando configurações gerais");
+          
+          const companyNameInput = document.getElementById('company-name');
+          const itemsPerPageInput = document.getElementById('items-per-page');
+          const defaultCurrencyInput = document.getElementById('default-currency');
+          
+          crmSettings.general.companyName = companyNameInput ? companyNameInput.value || "Meu CRM" : "Meu CRM";
+          crmSettings.general.itemsPerPage = itemsPerPageInput ? parseInt(itemsPerPageInput.value) || 10 : 10;
+          crmSettings.general.defaultCurrency = defaultCurrencyInput ? defaultCurrencyInput.value : "BRL";
+          
+          saveSettings();
+          applySettings();
+          
+          // Recarregar tabelas com novo número de itens por página
+          if (currentClientsPage > 1) currentClientsPage = 1;
+          if (currentServicesPage > 1) currentServicesPage = 1;
+          if (currentOrdersPage > 1) currentOrdersPage = 1;
+          if (currentTransactionsPage > 1) currentTransactionsPage = 1;
+          
+          renderClientsTable();
+          renderServicesTable();
+          renderOrdersTable();
+          renderTransactionsTable();
+        });
+      }
+      
+      // Formulário de aparência
+      const appearanceForm = document.getElementById('appearance-settings-form');
+      if (appearanceForm) {
+        appearanceForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          console.log("Salvando configurações de aparência");
+          
+          const themeRadio = document.querySelector('input[name="theme"]:checked');
+          if (themeRadio) {
+            crmSettings.appearance.theme = themeRadio.value;
+          }
+          
+          const primaryColorInput = document.getElementById('primary-color');
+          if (primaryColorInput) {
+            crmSettings.appearance.primaryColor = primaryColorInput.value;
+          }
+          
+          saveSettings();
+          applySettings();
+        });
+        
+        // Preview ao vivo para cor primária
+        const primaryColorInput = document.getElementById('primary-color');
+        if (primaryColorInput) {
+          primaryColorInput.addEventListener('input', function(e) {
+            applyPrimaryColor(e.target.value);
+          });
+        }
+        
+        // Alternar tema ao clicar nos previews
+        document.querySelectorAll('input[name="theme"]').forEach(radio => {
+          if (radio) {
+            radio.addEventListener('change', function(e) {
+              if (e.target.checked) {
+                applyTheme(e.target.value);
+              }
+            });
+          }
+        });
+      }
+      
+      // Formulário de notificações
+      const notificationForm = document.getElementById('notification-settings-form');
+      if (notificationForm) {
+        notificationForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          console.log("Salvando configurações de notificações");
+          
+          const emailNotificationsInput = document.getElementById('email-notifications');
+          const browserNotificationsInput = document.getElementById('browser-notifications');
+          const notifyNewOrderInput = document.getElementById('notify-new-order');
+          const notifyOrderStatusInput = document.getElementById('notify-order-status');
+          const notifyWarrantyExpiryInput = document.getElementById('notify-warranty-expiry');
+          const notifySyncCompleteInput = document.getElementById('notify-sync-complete');
+          
+          crmSettings.notifications.emailNotifications = emailNotificationsInput ? emailNotificationsInput.checked : false;
+          crmSettings.notifications.browserNotifications = browserNotificationsInput ? browserNotificationsInput.checked : true;
+          crmSettings.notifications.notifyNewOrder = notifyNewOrderInput ? notifyNewOrderInput.checked : true;
+          crmSettings.notifications.notifyOrderStatus = notifyOrderStatusInput ? notifyOrderStatusInput.checked : true;
+          crmSettings.notifications.notifyWarrantyExpiry = notifyWarrantyExpiryInput ? notifyWarrantyExpiryInput.checked : true;
+          crmSettings.notifications.notifySyncComplete = notifySyncCompleteInput ? notifySyncCompleteInput.checked : false;
+          
+          saveSettings();
+          
+          // Solicitar permissão para notificações do navegador se ativado
+          if (crmSettings.notifications.browserNotifications) {
+            requestNotificationPermission();
+          }
+        });
+      }
+      
+      // Configurações de backup
+      const saveBackupBtn = document.getElementById('save-backup-settings');
+      if (saveBackupBtn) {
+        saveBackupBtn.addEventListener('click', function(e) {
+          console.log("Salvando configurações de backup");
+          
+          const autoBackupInput = document.getElementById('auto-backup');
+          const backupFrequencyInput = document.getElementById('backup-frequency');
+          
+          crmSettings.backup.autoBackup = autoBackupInput ? autoBackupInput.checked : false;
+          crmSettings.backup.backupFrequency = backupFrequencyInput ? backupFrequencyInput.value : "weekly";
+          
+          saveSettings();
+          
+          // Configurar backup automático se ativado
+          if (crmSettings.backup.autoBackup) {
+            setupAutomaticBackup();
+          } else {
+            clearAutomaticBackup();
+          }
+        });
+      }
+      
+      // Botões de exportação
+      const exportButtons = [
+        { id: 'export-clients', handler: exportClients },
+        { id: 'export-services', handler: exportServices },
+        { id: 'export-orders', handler: exportOrders },
+        { id: 'export-all', handler: exportAllData }
+      ];
+      
+      exportButtons.forEach(button => {
+        const element = document.getElementById(button.id);
+        if (element) {
+          element.addEventListener('click', function(e) {
+            console.log(`Exportando dados: ${button.id}`);
+            if (typeof button.handler === 'function') {
+              button.handler();
+            } else {
+              console.error(`Função de manipulação não encontrada para: ${button.id}`);
+            }
+          });
+        }
+      });
+      
+      // Limpar cache
+      const clearCacheBtn = document.getElementById('clear-cache');
+      if (clearCacheBtn) {
+        clearCacheBtn.addEventListener('click', function() {
+          if (confirm('Tem certeza que deseja limpar o cache do sistema? Isso não afetará seus dados, mas você terá que fazer login novamente.')) {
+            clearSystemCache();
+          }
+        });
+      }
+      
+      console.log("Listeners de configurações configurados com sucesso");
+    } catch (error) {
+      console.error("Erro ao configurar listeners:", error);
+    }
+  }
+  
+  // Atualizar informações do sistema na página de configurações
+  function updateSystemInfo() {
+    // Último login
+    const lastLogin = localStorage.getItem('lastLogin');
+    const lastLoginElement = document.getElementById('last-login-date');
+    if (lastLoginElement) {
+      lastLoginElement.textContent = lastLogin ? formatDatetime(new Date(lastLogin)) : 'Nunca';
+    }
+    
+    // Última sincronização
+    const lastSyncElement = document.getElementById('last-sync-date');
+    if (lastSyncElement) {
+      lastSyncElement.textContent = lastSyncTime ? formatDatetime(new Date(lastSyncTime)) : 'Nunca';
+    }
+  }
+  
+  // Exportar dados para CSV
+  function exportToCSV(data, filename) {
+    if (!data || !data.length) {
+      showNotification('Exportação falhou', 'Não há dados para exportar.', 'error');
+      return;
+    }
+    
+    // Criar cabeçalhos a partir das chaves do primeiro objeto
+    const headers = Object.keys(data[0]);
+    
+    // Criar linhas de dados
+    const csvRows = [];
+    
+    // Adicionar cabeçalhos
+    csvRows.push(headers.join(','));
+    
+    // Adicionar linhas de dados
+    for (const row of data) {
+      const values = headers.map(header => {
+        const value = row[header];
+        // Escapar aspas e adicionar aspas ao redor de strings
+        return typeof value === 'string' ? `"${value.replace(/"/g, '""')}"` : value;
+      });
+      
+      csvRows.push(values.join(','));
+    }
+    
+    // Criar blob e link para download
+    const csvString = csvRows.join('\n');
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showNotification('Exportação concluída', `Os dados foram exportados com sucesso para ${filename}`, 'success');
+  }
+  
+  // Funções de exportação
+  function exportClients() {
+    exportToCSV(clients, `clientes_${formatDateForFilename(new Date())}.csv`);
+  }
+  
+  function exportServices() {
+    exportToCSV(services, `servicos_${formatDateForFilename(new Date())}.csv`);
+  }
+  
+  function exportOrders() {
+    // Adicionar informações de cliente e serviço às ordens
+    const enrichedOrders = orders.map(order => {
+      const client = clients.find(c => c.id === order.client_id) || { name: "Cliente Desconhecido" };
+      const service = services.find(s => s.id === order.service_id) || { name: "Serviço Desconhecido" };
+      
+      return {
+        ...order,
+        client_name: client.name,
+        service_name: service.name,
+        status_text: getStatusText(order.status),
+        created_at_formatted: formatDate(order.created_at)
+      };
+    });
+    
+    exportToCSV(enrichedOrders, `ordens_${formatDateForFilename(new Date())}.csv`);
+  }
+  
+  function exportAllData() {
+    exportClients();
+    exportServices();
+    exportOrders();
+    
+    showNotification('Exportação completa', 'Todos os dados foram exportados com sucesso.', 'success');
+  }
+  
+  // Formatar data para nome de arquivo
+  function formatDateForFilename(date) {
+    return date.toISOString().split('T')[0];
+  }
+  
+  // Configurar backup automático
+  function setupAutomaticBackup() {
+    // Limpar qualquer intervalo existente
+    clearAutomaticBackup();
+    
+    // Definir próxima data de backup
+    const nextBackupDate = calculateNextBackupDate();
+    localStorage.setItem('nextBackupDate', nextBackupDate.toISOString());
+    
+    // Verificar periodicamente se é hora de fazer backup
+    window.backupCheckInterval = setInterval(checkBackupSchedule, 3600000); // Verificar a cada hora
+  }
+  
+  // Calcular próxima data de backup
+  function calculateNextBackupDate() {
+    const now = new Date();
+    let nextDate = new Date(now);
+    
+    switch (crmSettings.backup.backupFrequency) {
+      case 'daily':
+        nextDate.setDate(nextDate.getDate() + 1);
+        nextDate.setHours(3, 0, 0, 0); // 3 AM
+        break;
+      case 'weekly':
+        nextDate.setDate(nextDate.getDate() + (7 - nextDate.getDay())); // Próximo domingo
+        nextDate.setHours(3, 0, 0, 0); // 3 AM
+        break;
+      case 'monthly':
+        nextDate.setMonth(nextDate.getMonth() + 1);
+        nextDate.setDate(1); // Primeiro dia do próximo mês
+        nextDate.setHours(3, 0, 0, 0); // 3 AM
+        break;
+    }
+    
+    return nextDate;
+  }
+  
+  // Verificar se é hora de fazer backup
+  function checkBackupSchedule() {
+    if (!crmSettings.backup.autoBackup) return;
+    
+    const nextBackupDateStr = localStorage.getItem('nextBackupDate');
+    if (!nextBackupDateStr) {
+      setupAutomaticBackup();
+      return;
+    }
+    
+    const nextBackupDate = new Date(nextBackupDateStr);
+    const now = new Date();
+    
+    if (now >= nextBackupDate) {
+      // Fazer backup
+      exportAllData();
+      
+      // Calcular próxima data de backup
+      const newNextBackupDate = calculateNextBackupDate();
+      localStorage.setItem('nextBackupDate', newNextBackupDate.toISOString());
+      
+      // Registrar no log
+      console.log(`Backup automático concluído em ${formatDatetime(now)}. Próximo backup: ${formatDatetime(newNextBackupDate)}`);
+      
+      // Notificar se ativado
+      if (crmSettings.notifications.notifySyncComplete) {
+        createNotification(
+          'Backup Automático',
+          'Backup automático concluído com sucesso.',
+          'success'
+        );
+      }
+    }
+  }
+  
+  // Limpar backup automático
+  function clearAutomaticBackup() {
+    if (window.backupCheckInterval) {
+      clearInterval(window.backupCheckInterval);
+    }
+  }
+  
+  // Limpar cache do sistema
+  function clearSystemCache() {
+    // Preservar configurações e dados de login
+    const settings = localStorage.getItem('crmSettings');
+    const theme = localStorage.getItem('theme');
+    
+    // Limpar localStorage
+    localStorage.clear();
+    
+    // Restaurar configurações
+    if (settings) localStorage.setItem('crmSettings', settings);
+    if (theme) localStorage.setItem('theme', theme);
+    
+    // Limpar IndexedDB se existir
+    if (offlineDb) {
+      try {
+        offlineDb.close();
+        const request = indexedDB.deleteDatabase(DB_NAME);
+        request.onsuccess = () => {
+          console.log('IndexedDB foi limpo com sucesso');
+        };
+      } catch (error) {
+        console.error('Erro ao limpar IndexedDB:', error);
+      }
+    }
+    
+    // Deslogar usuário
+    supabase.auth.signOut().then(() => {
+      showNotification('Cache limpo', 'O cache do sistema foi limpo com sucesso. Você será redirecionado para a tela de login.', 'success');
+      
+      // Redirecionar após 2 segundos
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    });
+  }
+  
+  // Registrar último login
+  function recordLogin() {
+    localStorage.setItem('lastLogin', new Date().toISOString());
+  }
+  
+  // Modificar a função existente handleLogin para registrar o login
+  const originalHandleLogin = handleLogin;
+  window.handleLogin = async function(e) {
+    const result = await originalHandleLogin(e);
+    
+    // Registrar login se bem-sucedido
+    if (currentUser) {
+      recordLogin();
+    }
+    
+    return result;
+  };
+  
+  // Modificar showDashboard para inicializar configurações
+  const originalShowDashboard = showDashboard;
+  window.showDashboard = async function() {
+    await originalShowDashboard();
+    
+    // Inicializar sistema de configurações
+    initSettings();
+    
+    // Configurar verificação de backup se ativado
+    if (crmSettings.backup.autoBackup) {
+      setupAutomaticBackup();
+    }
+  };
+  // Adicione estas linhas ao final do seu arquivo script.js para garantir que
+// a página de configurações seja inicializada corretamente quando selecionada
+
+// Função para verificar se a página de configurações está ativa e inicializá-la
+function checkAndInitSettings() {
+    // Verifica se a página de configurações está ativa
+    const settingsPage = document.getElementById('settings');
+    if (settingsPage && settingsPage.classList.contains('active')) {
+      console.log('Inicializando página de configurações...');
+      initSettings();
+    }
+  }
+  
+  // Modificar a função showActivePage para também inicializar as configurações quando necessário
+  const originalShowActivePage = showActivePage;
+  window.showActivePage = function(pageId) {
+    originalShowActivePage(pageId);
+    
+    // Se a página atual for 'settings', inicializar as configurações
+    if (pageId === 'settings') {
+      // Pequeno timeout para garantir que a página já esteja visível
+      setTimeout(() => {
+        initSettings();
+      }, 100);
+    }
+  };
+  

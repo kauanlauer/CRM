@@ -163,6 +163,11 @@
                 ><i class="fas fa-user-cog"></i> Usuários</a
               >
             </li>
+            <li>
+              <a href="#" data-page="settings">
+                <i class="fas fa-cog"></i> Configurações
+              </a>
+            </li>
           </ul>
         </aside>
 
@@ -399,9 +404,208 @@
               </div>
             </div>
           </div>
+           <!-- Adicionar esta nova página de configurações (após a div com id="users") -->
+<div class="page" id="settings">
+  <h1>Configurações</h1>
+  
+  <div class="card">
+    <div class="card-header">
+      <h2>Configurações Gerais</h2>
+    </div>
+    <div class="card-body">
+      <form id="general-settings-form">
+        <div class="form-group">
+          <label for="company-name">Nome da Empresa</label>
+          <input type="text" class="form-control" id="company-name" placeholder="Nome da sua empresa">
+        </div>
+        <div class="form-group">
+          <label for="items-per-page">Itens por Página</label>
+          <select class="form-control" id="items-per-page">
+            <option value="5">5</option>
+            <option value="10" selected>10</option>
+            <option value="15">15</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="default-currency">Moeda Padrão</label>
+          <select class="form-control" id="default-currency">
+            <option value="BRL" selected>Real (R$)</option>
+            <option value="USD">Dólar (US$)</option>
+            <option value="EUR">Euro (€)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <div class="card">
+    <div class="card-header">
+      <h2>Aparência</h2>
+    </div>
+    <div class="card-body">
+      <form id="appearance-settings-form">
+        <div class="form-group">
+          <label>Tema</label>
+          <div class="theme-options">
+            <div class="theme-option">
+              <input type="radio" id="theme-light" name="theme" value="light">
+              <label for="theme-light" class="theme-preview light-theme">
+                <span>Tema Claro</span>
+              </label>
+            </div>
+            <div class="theme-option">
+              <input type="radio" id="theme-dark" name="theme" value="dark">
+              <label for="theme-dark" class="theme-preview dark-theme">
+                <span>Tema Escuro</span>
+              </label>
+            </div>
+            <div class="theme-option">
+              <input type="radio" id="theme-auto" name="theme" value="auto" checked>
+              <label for="theme-auto" class="theme-preview auto-theme">
+                <span>Automático (Sistema)</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="primary-color">Cor Principal</label>
+          <input type="color" class="form-control" id="primary-color" value="#4361ee">
+          <small>Esta cor será usada para elementos principais como botões e destaques.</small>
+        </div>
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2>Notificações</h2>
+    </div>
+    <div class="card-body">
+      <form id="notification-settings-form">
+        <div class="form-group">
+          <label>Notificações por Email</label>
+          <div class="switch-wrapper">
+            <label class="switch">
+              <input type="checkbox" id="email-notifications">
+              <span class="slider"></span>
+            </label>
+            <span class="switch-label">Receber notificações por email</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Notificações no Navegador</label>
+          <div class="switch-wrapper">
+            <label class="switch">
+              <input type="checkbox" id="browser-notifications" checked>
+              <span class="slider"></span>
+            </label>
+            <span class="switch-label">Receber notificações no navegador</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Tipos de Notificação</label>
+          <div class="checkbox-group">
+            <div class="checkbox-wrapper">
+              <input type="checkbox" id="notify-new-order" checked>
+              <label for="notify-new-order">Novas ordens de serviço</label>
+            </div>
+            <div class="checkbox-wrapper">
+              <input type="checkbox" id="notify-order-status" checked>
+              <label for="notify-order-status">Mudanças de status</label>
+            </div>
+            <div class="checkbox-wrapper">
+              <input type="checkbox" id="notify-warranty-expiry" checked>
+              <label for="notify-warranty-expiry">Garantias próximas do vencimento</label>
+            </div>
+            <div class="checkbox-wrapper">
+              <input type="checkbox" id="notify-sync-complete">
+              <label for="notify-sync-complete">Sincronização concluída</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <div class="card">
+    <div class="card-header">
+      <h2>Backup e Exportação</h2>
+    </div>
+    <div class="card-body">
+      <div class="form-group">
+        <label>Exportar Dados</label>
+        <div class="btn-group">
+          <button class="btn btn-primary" id="export-clients">Exportar Clientes</button>
+          <button class="btn btn-primary" id="export-services">Exportar Serviços</button>
+          <button class="btn btn-primary" id="export-orders">Exportar Ordens</button>
+          <button class="btn btn-primary" id="export-all">Exportar Todos os Dados</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Backup Automático</label>
+        <div class="switch-wrapper">
+          <label class="switch">
+            <input type="checkbox" id="auto-backup">
+            <span class="slider"></span>
+          </label>
+          <span class="switch-label">Realizar backup automático</span>
+        </div>
+        <select class="form-control" id="backup-frequency" style="margin-top: 10px;">
+          <option value="daily">Diariamente</option>
+          <option value="weekly" selected>Semanalmente</option>
+          <option value="monthly">Mensalmente</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <button class="btn btn-primary" id="save-backup-settings">Salvar Configurações de Backup</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2>Dados do Sistema</h2>
+    </div>
+    <div class="card-body">
+      <div class="form-group">
+        <label>Versão do Sistema:</label>
+        <span class="value">1.0.0</span>
+      </div>
+      <div class="form-group">
+        <label>Banco de Dados:</label>
+        <span class="value">Supabase</span>
+      </div>
+      <div class="form-group">
+        <label>Último Login:</label>
+        <span class="value" id="last-login-date">-</span>
+      </div>
+      <div class="form-group">
+        <label>Última Sincronização:</label>
+        <span class="value" id="last-sync-date">-</span>
+      </div>
+      <div class="form-group">
+        <button class="btn btn-danger" id="clear-cache">Limpar Cache do Sistema</button>
+        <small class="text-warning">Esta ação não afetará seus dados, apenas limpará o cache local do sistema.</small>
+      </div>
+    </div>
+  </div>
+</div>
         </div>
       </div>
     </div>
+
+   
 
     <!-- Modal de Cliente -->
     <div id="client-modal" class="modal">
