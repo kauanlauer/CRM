@@ -1724,6 +1724,14 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+function checkAndInitSettings() {
+    const settingsPage = document.getElementById('settings');
+    if (settingsPage && settingsPage.classList.contains('active')) {
+      console.log('Página de configurações ativa, inicializando...');
+      initSettings();
+    }
+}  
+
 async function makeCurrentUserAdmin() {
   try {
     // Atualizar metadados do usuário para admin
@@ -3527,10 +3535,12 @@ let crmSettings = {
   function saveSettings() {
     try {
       localStorage.setItem('crmSettings', JSON.stringify(crmSettings));
-      showNotification('Configurações salvas', 'Suas configurações foram salvas com sucesso.', 'success');
+      console.log("Configurações salvas no localStorage:", crmSettings);
+      return true;
     } catch (error) {
       console.error('Erro ao salvar configurações:', error);
       showNotification('Erro ao salvar', 'Não foi possível salvar suas configurações.', 'error');
+      return false;
     }
   }
   
@@ -3593,11 +3603,14 @@ function setupSettingsForm() {
   // Aplicar configurações ao sistema
   function applySettings() {
     // Aplicar nome da empresa
-    document.querySelector('.logo h1').textContent = crmSettings.general.companyName;
-    document.title = crmSettings.general.companyName;
+    const logoTitle = document.querySelector('.logo h1');
+    if (logoTitle) {
+      logoTitle.textContent = crmSettings.general.companyName;
+      document.title = crmSettings.general.companyName;
+    }
     
-    // Aplicar itens por página
-    itemsPerPage = parseInt(crmSettings.general.itemsPerPage);
+    // IMPORTANTE: Atualizar a variável global itemsPerPage corretamente
+    window.itemsPerPage = parseInt(crmSettings.general.itemsPerPage);
     
     // Aplicar tema
     applyTheme(crmSettings.appearance.theme);
@@ -3609,7 +3622,25 @@ function setupSettingsForm() {
     if (crmSettings.notifications.browserNotifications) {
       requestNotificationPermission();
     }
+    
+    // Recarregar todas as tabelas para aplicar as mudanças de paginação
+    if (currentClientsPage > 1) currentClientsPage = 1;
+    if (currentServicesPage > 1) currentServicesPage = 1;
+    if (currentOrdersPage > 1) currentOrdersPage = 1;
+    if (currentTransactionsPage > 1) currentTransactionsPage = 1;
+    
+    // Atualizar as listas visíveis
+    const activePage = document.querySelector('.page.active');
+    if (activePage) {
+      if (activePage.id === 'clients') renderClientsTable();
+      if (activePage.id === 'services') renderServicesTable();
+      if (activePage.id === 'orders') renderOrdersTable();
+      if (activePage.id === 'finance') renderTransactionsTable();
+    }
+    
+    console.log("Configurações aplicadas com sucesso:", crmSettings);
   }
+  
   
   // Aplicar tema (claro, escuro ou automático)
   function applyTheme(theme) {
@@ -3776,29 +3807,22 @@ function setupSettingsForm() {
       if (generalForm) {
         generalForm.addEventListener('submit', function(e) {
           e.preventDefault();
-          console.log("Salvando configurações gerais");
           
           const companyNameInput = document.getElementById('company-name');
           const itemsPerPageInput = document.getElementById('items-per-page');
           const defaultCurrencyInput = document.getElementById('default-currency');
           
+          // Obter valores dos campos ou usar valores padrão
           crmSettings.general.companyName = companyNameInput ? companyNameInput.value || "Meu CRM" : "Meu CRM";
           crmSettings.general.itemsPerPage = itemsPerPageInput ? parseInt(itemsPerPageInput.value) || 10 : 10;
           crmSettings.general.defaultCurrency = defaultCurrencyInput ? defaultCurrencyInput.value : "BRL";
           
+          // Salvar e aplicar imediatamente
           saveSettings();
           applySettings();
           
-          // Recarregar tabelas com novo número de itens por página
-          if (currentClientsPage > 1) currentClientsPage = 1;
-          if (currentServicesPage > 1) currentServicesPage = 1;
-          if (currentOrdersPage > 1) currentOrdersPage = 1;
-          if (currentTransactionsPage > 1) currentTransactionsPage = 1;
-          
-          renderClientsTable();
-          renderServicesTable();
-          renderOrdersTable();
-          renderTransactionsTable();
+          // Mostrar notificação de sucesso
+          showNotification('Configurações gerais salvas', 'As configurações gerais foram aplicadas com sucesso.', 'success');
         });
       }
       
@@ -3807,7 +3831,6 @@ function setupSettingsForm() {
       if (appearanceForm) {
         appearanceForm.addEventListener('submit', function(e) {
           e.preventDefault();
-          console.log("Salvando configurações de aparência");
           
           const themeRadio = document.querySelector('input[name="theme"]:checked');
           if (themeRadio) {
@@ -3819,14 +3842,19 @@ function setupSettingsForm() {
             crmSettings.appearance.primaryColor = primaryColorInput.value;
           }
           
+          // Salvar e aplicar imediatamente
           saveSettings();
           applySettings();
+          
+          // Mostrar notificação de sucesso
+          showNotification('Configurações de aparência salvas', 'As configurações de aparência foram aplicadas com sucesso.', 'success');
         });
         
         // Preview ao vivo para cor primária
         const primaryColorInput = document.getElementById('primary-color');
         if (primaryColorInput) {
           primaryColorInput.addEventListener('input', function(e) {
+            // Aplicar a cor em tempo real como preview
             applyPrimaryColor(e.target.value);
           });
         }
@@ -3836,7 +3864,10 @@ function setupSettingsForm() {
           if (radio) {
             radio.addEventListener('change', function(e) {
               if (e.target.checked) {
+                // Aplicar o tema em tempo real como preview
                 applyTheme(e.target.value);
+                // Manter as configurações atualizadas em memória
+                crmSettings.appearance.theme = e.target.value;
               }
             });
           }
@@ -3848,7 +3879,6 @@ function setupSettingsForm() {
       if (notificationForm) {
         notificationForm.addEventListener('submit', function(e) {
           e.preventDefault();
-          console.log("Salvando configurações de notificações");
           
           const emailNotificationsInput = document.getElementById('email-notifications');
           const browserNotificationsInput = document.getElementById('browser-notifications');
@@ -3864,12 +3894,17 @@ function setupSettingsForm() {
           crmSettings.notifications.notifyWarrantyExpiry = notifyWarrantyExpiryInput ? notifyWarrantyExpiryInput.checked : true;
           crmSettings.notifications.notifySyncComplete = notifySyncCompleteInput ? notifySyncCompleteInput.checked : false;
           
+          // Salvar e aplicar
           saveSettings();
+          applySettings();
           
           // Solicitar permissão para notificações do navegador se ativado
           if (crmSettings.notifications.browserNotifications) {
             requestNotificationPermission();
           }
+          
+          // Mostrar notificação de sucesso
+          showNotification('Configurações de notificações salvas', 'As configurações de notificações foram aplicadas com sucesso.', 'success');
         });
       }
       
@@ -3877,14 +3912,13 @@ function setupSettingsForm() {
       const saveBackupBtn = document.getElementById('save-backup-settings');
       if (saveBackupBtn) {
         saveBackupBtn.addEventListener('click', function(e) {
-          console.log("Salvando configurações de backup");
-          
           const autoBackupInput = document.getElementById('auto-backup');
           const backupFrequencyInput = document.getElementById('backup-frequency');
           
           crmSettings.backup.autoBackup = autoBackupInput ? autoBackupInput.checked : false;
           crmSettings.backup.backupFrequency = backupFrequencyInput ? backupFrequencyInput.value : "weekly";
           
+          // Salvar e aplicar
           saveSettings();
           
           // Configurar backup automático se ativado
@@ -3893,30 +3927,14 @@ function setupSettingsForm() {
           } else {
             clearAutomaticBackup();
           }
+          
+          // Mostrar notificação de sucesso
+          showNotification('Configurações de backup salvas', 'As configurações de backup foram aplicadas com sucesso.', 'success');
         });
       }
       
       // Botões de exportação
-      const exportButtons = [
-        { id: 'export-clients', handler: exportClients },
-        { id: 'export-services', handler: exportServices },
-        { id: 'export-orders', handler: exportOrders },
-        { id: 'export-all', handler: exportAllData }
-      ];
-      
-      exportButtons.forEach(button => {
-        const element = document.getElementById(button.id);
-        if (element) {
-          element.addEventListener('click', function(e) {
-            console.log(`Exportando dados: ${button.id}`);
-            if (typeof button.handler === 'function') {
-              button.handler();
-            } else {
-              console.error(`Função de manipulação não encontrada para: ${button.id}`);
-            }
-          });
-        }
-      });
+      setupExportButtons();
       
       // Limpar cache
       const clearCacheBtn = document.getElementById('clear-cache');
@@ -3931,6 +3949,7 @@ function setupSettingsForm() {
       console.log("Listeners de configurações configurados com sucesso");
     } catch (error) {
       console.error("Erro ao configurar listeners:", error);
+      showNotification('Erro na configuração', 'Ocorreu um erro ao configurar o sistema de configurações.', 'error');
     }
   }
   
@@ -4185,26 +4204,36 @@ function setupSettingsForm() {
 // a página de configurações seja inicializada corretamente quando selecionada
 
 // Função para verificar se a página de configurações está ativa e inicializá-la
-function checkAndInitSettings() {
-    // Verifica se a página de configurações está ativa
-    const settingsPage = document.getElementById('settings');
-    if (settingsPage && settingsPage.classList.contains('active')) {
-      console.log('Inicializando página de configurações...');
-      initSettings();
-    }
+function initSettings() {
+    console.log("Inicializando sistema de configurações...");
+    
+    // Carregar configurações salvas
+    loadSettings();
+    
+    // Aplicar configurações carregadas
+    applySettings();
+    
+    // Preencher formulários com valores atuais
+    setupSettingsForm();
+    
+    // Configurar listeners para aplicar as configurações quando alteradas
+    setupSettingsListeners();
+    
+    // Atualizar informações do sistema
+    updateSystemInfo();
+    
+    console.log("Sistema de configurações inicializado com sucesso");
   }
   
   // Modificar a função showActivePage para também inicializar as configurações quando necessário
-  const originalShowActivePage = showActivePage;
+  const originalShowActivePage = window.showActivePage;
   window.showActivePage = function(pageId) {
+    // Chamar a função original
     originalShowActivePage(pageId);
     
-    // Se a página atual for 'settings', inicializar as configurações
+    // Se a página for a de configurações, inicializá-la
     if (pageId === 'settings') {
-      // Pequeno timeout para garantir que a página já esteja visível
-      setTimeout(() => {
-        initSettings();
-      }, 100);
+      setTimeout(initSettings, 100);
     }
   };
   
