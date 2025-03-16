@@ -616,20 +616,26 @@ async function deleteClient(clientId) {
 }
 
 async function handleClientForm(e) {
-  e.preventDefault();
-
-  const clientId = document.getElementById("client-id").value;
-  const name = document.getElementById("client-name").value;
-  const email = document.getElementById("client-email").value;
-  const phone = document.getElementById("client-phone").value;
-  const address = document.getElementById("client-address").value;
-
-  const clientData = {
-    name,
-    email,
-    phone,
-    address,
-  };
+    e.preventDefault();
+  
+    const clientId = document.getElementById("client-id").value;
+    const name = document.getElementById("client-name").value;
+    const email = document.getElementById("client-email").value || ""; // Usa string vazia se for nulo
+    const phone = document.getElementById("client-phone").value || "";
+    const address = document.getElementById("client-address").value || "";
+    
+    // Validar apenas o nome do cliente
+    if (!name.trim()) {
+      alert("O nome do cliente é obrigatório!");
+      return;
+    }
+  
+    const clientData = {
+      name,
+      email,
+      phone,
+      address,
+    };
 
   showLoading();
   try {
