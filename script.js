@@ -173,23 +173,6 @@ function isAdmin() {
   );
 }
 
-// Função para criar as tabelas no Supabase (executada apenas uma vez)
-async function createTables() {
-  try {
-    // Criar tabela de clientes
-    await supabase.rpc("create_clients_table_if_not_exists");
-
-    // Criar tabela de serviços
-    await supabase.rpc("create_services_table_if_not_exists");
-
-    // Criar tabela de ordens de serviço
-    await supabase.rpc("create_orders_table_if_not_exists");
-
-    console.log("Tabelas criadas ou já existentes!");
-  } catch (error) {
-    console.error("Erro ao criar tabelas:", error);
-  }
-}
 
 // Funções de Autenticação
 async function handleLogin(e) {
@@ -507,6 +490,10 @@ function renderClientsTable(searchTerm = "") {
   document.querySelectorAll(".delete-client").forEach((button) => {
     button.addEventListener("click", (e) => deleteClient(e.target.dataset.id));
   });
+  // Adicione isso junto com seus outros event listeners
+document.querySelector(".btn-secondary").addEventListener("click", () => {
+  document.getElementById("userModal").style.display = "none";
+});
 }
 
 function renderPagination(container, totalPages, currentPage, type) {
@@ -1296,6 +1283,49 @@ function editUser(userId) {
     }
   }
   
+  function editUser(userId) {
+    const user = users.find((u) => u.id === userId);
+    if (!user) return;
+  
+    document.getElementById("user-id").value = user.id;
+    document.getElementById("user-name").value = user.name || "";
+    document.getElementById("user-email").value = user.email || "";
+    document.getElementById("user-password").value = ""; // Sempre em branco por segurança
+    document.getElementById("user-role").value = user.role || "user";
+  
+    showUserModal(true);
+}
+
+function showUserModal(isEdit = false) {
+  const modal = document.getElementById("userModal");
+  const title = document.getElementById("userModalTitle");
+  
+  if (isEdit) {
+      title.textContent = "Editar Usuário";
+  } else {
+      title.textContent = "Novo Usuário";
+      document.getElementById("user-id").value = "";
+      document.getElementById("userForm").reset();
+  }
+  
+  modal.style.display = "block";
+}
+
+function showUserModal(isEdit = false) {
+    const modal = document.getElementById("userModal");
+    const title = document.getElementById("userModalTitle");
+    
+    if (isEdit) {
+        title.textContent = "Editar Usuário";
+    } else {
+        title.textContent = "Novo Usuário";
+        document.getElementById("user-id").value = "";
+        document.getElementById("userForm").reset();
+    }
+    
+    modal.style.display = "block";
+}
+
 
 function renderUsersTable() {
     // Limpar tabela
@@ -1448,39 +1478,6 @@ async function handleUserForm(e) {
     }
   }
 
-  
-// Função para criar a tabela profile no Supabase caso não exista
-async function createProfileTable() {
-    try {
-      // Executar uma função RPC que criará a tabela se não existir
-      await supabase.rpc("create_profile_table_if_not_exists");
-      console.log("Tabela profile criada ou já existente!");
-    } catch (error) {
-      console.error("Erro ao criar tabela profile:", error);
-    }
-  }
-  
-  // Adicionar à função createTables
-  async function createTables() {
-    try {
-      // Criar tabela de clientes
-      await supabase.rpc("create_clients_table_if_not_exists");
-  
-      // Criar tabela de serviços
-      await supabase.rpc("create_services_table_if_not_exists");
-  
-      // Criar tabela de ordens de serviço
-      await supabase.rpc("create_orders_table_if_not_exists");
-      
-      // Criar tabela de perfil de usuários
-      await createProfileTable();
-  
-      console.log("Tabelas criadas ou já existentes!");
-    } catch (error) {
-      console.error("Erro ao criar tabelas:", error);
-    }
-  }
-  
   // Função auxiliar para verificar se o usuário atual existe na tabela profile
 // e criar seu registro caso não exista
 async function ensureUserProfileExists() {
@@ -1590,8 +1587,7 @@ document.addEventListener("DOMContentLoaded", () => {
     checkAndInitSettings();
   });
 
-  // Inicializar tabelas no Supabase
-  createTables();
+
 
   // Login
   loginForm.addEventListener("submit", handleLogin);
