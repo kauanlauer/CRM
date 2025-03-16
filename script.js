@@ -960,9 +960,9 @@ function renderOrdersTable(searchTerm = "") {
 
   // Adicionar event listeners para os botões
   document.querySelectorAll(".view-order").forEach((button) => {
-    button.addEventListener("click", (e) => viewOrder(e.target.dataset.id));
+    button.addEventListener("click", (e) => viewOrder(e.currentTarget.dataset.id));
   });
-
+  
   document.querySelectorAll(".edit-order").forEach((button) => {
     button.addEventListener("click", (e) => editOrder(e.target.dataset.id));
   });
@@ -1046,6 +1046,21 @@ function showOrderModal(isEdit = false) {
   orderModal.style.display = "block";
 }
 
+// Add event listener for service selection to set default price
+orderServiceSelect.addEventListener('change', function() {
+    const serviceId = this.value;
+    if (serviceId) {
+      const service = services.find(s => s.id === serviceId);
+      if (service) {
+        // Only set default price if the price field is empty or 0
+        const priceField = document.getElementById("order-price");
+        if (!priceField.value || parseFloat(priceField.value) === 0) {
+          priceField.value = service.price;
+        }
+      }
+    }
+  });
+
 function viewOrder(orderId) {
   const order = orders.find((o) => o.id === orderId);
   if (!order) return;
@@ -1084,24 +1099,26 @@ function viewOrder(orderId) {
   document.getElementById("view-order-warranty").textContent = warrantyDate;
 
   viewOrderModal.style.display = "block";
+  
 }
 
 function editOrder(orderId) {
-  const order = orders.find((o) => o.id === orderId);
-  if (!order) return;
-
-  document.getElementById("order-id").value = order.id;
-
-  showOrderModal(true);
-
-  // Aguardar o preenchimento dos selects
-  setTimeout(() => {
-    document.getElementById("order-client").value = order.client_id;
-    document.getElementById("order-service").value = order.service_id;
-    document.getElementById("order-description").value = order.description;
-    document.getElementById("order-status").value = order.status;
-  }, 100);
-}
+    const order = orders.find((o) => o.id === orderId);
+    if (!order) return;
+  
+    document.getElementById("order-id").value = order.id;
+  
+    showOrderModal(true);
+  
+    // Aguardar o preenchimento dos selects
+    setTimeout(() => {
+      document.getElementById("order-client").value = order.client_id;
+      document.getElementById("order-service").value = order.service_id;
+      document.getElementById("order-description").value = order.description;
+      document.getElementById("order-status").value = order.status;
+      document.getElementById("order-price").value = order.price; // Add this line
+    }, 100);
+  }
 
 async function deleteOrder(orderId) {
   if (
@@ -1135,74 +1152,77 @@ async function deleteOrder(orderId) {
 }
 
 async function handleOrderForm(e) {
-  e.preventDefault();
-
-  const orderId = document.getElementById("order-id").value;
-  const clientId = document.getElementById("order-client").value;
-  const serviceId = document.getElementById("order-service").value;
-  const description = document.getElementById("order-description").value;
-  const status = document.getElementById("order-status").value;
-
-  // Obter o preço do serviço
-  const service = services.find((s) => s.id === serviceId);
-  if (!service) {
-    alert("Serviço inválido. Por favor, selecione um serviço.");
-    return;
-  }
-
-  const orderData = {
-    client_id: clientId,
-    service_id: serviceId,
-    description,
-    status,
-    price: service.price,
-  };
-
-  if (!orderId) {
-    // Nova ordem, incluir data de criação
-    orderData.created_at = new Date().toISOString();
-  } else {
-    // Ordem existente, incluir data de atualização
-    orderData.updated_at = new Date().toISOString();
-  }
-
-  showLoading();
-  try {
-    let result;
-
-    if (orderId) {
-      // Editar ordem existente
-      result = await supabase
-        .from("orders")
-        .update(orderData)
-        .eq("id", orderId);
-    } else {
-      // Criar nova ordem
-      result = await supabase.from("orders").insert([orderData]);
+    e.preventDefault();
+  
+    const orderId = document.getElementById("order-id").value;
+    const clientId = document.getElementById("order-client").value;
+    const serviceId = document.getElementById("order-service").value;
+    const description = document.getElementById("order-description").value;
+    const status = document.getElementById("order-status").value;
+    
+    // Usar o preço inserido manualmente em vez do preço do serviço
+    const price = parseFloat(document.getElementById("order-price").value) || 0;
+  
+    // Verificar se o serviço existe
+    const service = services.find((s) => s.id === serviceId);
+    if (!service) {
+      alert("Serviço inválido. Por favor, selecione um serviço.");
+      return;
     }
-
-    if (result.error) throw result.error;
-
-    // Fechar modal e limpar formulário
-    orderModal.style.display = "none";
-    orderForm.reset();
-    document.getElementById("order-id").value = "";
-
-    // Atualizar lista de ordens
-    await loadOrders();
-
-    // Atualizar estatísticas
-    updateStats();
-
-    // Atualizar ordens recentes
-    loadRecentOrders();
-  } catch (error) {
-    console.error("Erro ao salvar ordem de serviço:", error);
-    alert("Erro ao salvar ordem de serviço: " + error.message);
-  } finally {
-    hideLoading();
+  
+    const orderData = {
+      client_id: clientId,
+      service_id: serviceId,
+      description,
+      status,
+      price // Usar o preço inserido manualmente
+    };
+  
+    if (!orderId) {
+      // Nova ordem, incluir data de criação
+      orderData.created_at = new Date().toISOString();
+    } else {
+      // Ordem existente, incluir data de atualização
+      orderData.updated_at = new Date().toISOString();
+    }
+  
+    showLoading();
+    try {
+      let result;
+  
+      if (orderId) {
+        // Editar ordem existente
+        result = await supabase
+          .from("orders")
+          .update(orderData)
+          .eq("id", orderId);
+      } else {
+        // Criar nova ordem
+        result = await supabase.from("orders").insert([orderData]);
+      }
+  
+      if (result.error) throw result.error;
+  
+      // Fechar modal e limpar formulário
+      orderModal.style.display = "none";
+      orderForm.reset();
+      document.getElementById("order-id").value = "";
+  
+      // Atualizar lista de ordens
+      await loadOrders();
+  
+      // Atualizar estatísticas
+      updateStats();
+  
+      // Atualizar ordens recentes
+      loadRecentOrders();
+    } catch (error) {
+      console.error("Erro ao salvar ordem de serviço:", error);
+      alert("Erro ao salvar ordem de serviço: " + error.message);
+    } finally {
+      hideLoading();
+    }
   }
-}
 
 // Funções de Usuário
 async function loadUsers() {

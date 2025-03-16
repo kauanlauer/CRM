@@ -126,23 +126,7 @@
           </div>
         </div>
       </header>
-      <!-- Adicione este botão aqui -->
-      <button
-        onclick="makeCurrentUserAdmin()"
-        style="
-          position: fixed;
-          bottom: 10px;
-          right: 10px;
-          z-index: 9999;
-          background-color: #e74c3c;
-          color: white;
-          padding: 10px;
-          border: none;
-          border-radius: 4px;
-        "
-      >
-        Tornar-me Admin
-      </button>
+     
 
       <div class="overlay" id="overlay"></div>
 
@@ -519,12 +503,23 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="order-description">Descrição do problema</label>
+            <label for="order-description">Descrição da Ordem de Serviço</label>
             <textarea
               class="form-control"
               id="order-description"
               required
             ></textarea>
+          </div>
+          <div class="form-group">
+            <label for="order-price">Preço (R$)</label>
+            <input
+              type="number"
+              step="0.01"
+              class="form-control"
+              id="order-price"
+              placeholder="0.00"
+            />
+            <small>Deixe 0 para serviços gratuitos</small>
           </div>
           <div class="form-group">
             <label for="order-status">Status</label>
@@ -602,7 +597,7 @@
             <div id="view-order-date"></div>
           </div>
           <div class="form-group">
-            <label>Valor:</label>
+            <label>Preço:</label>
             <div id="view-order-price"></div>
           </div>
           <div class="form-group">
@@ -611,14 +606,8 @@
           </div>
         </div>
       </div>
-      <button
-        onclick="makeCurrentUserAdmin()"
-        style="position: fixed; bottom: 10px; right: 10px; z-index: 9999"
-      >
-        Tornar-me Admin
-      </button>
-    </div>
-
+    </div> <!-- Adicione esta tag de fechamento -->
+    
     <!-- importação da biblioteca Supabase para -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
