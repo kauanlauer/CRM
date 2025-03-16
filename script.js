@@ -1742,3 +1742,118 @@ async function makeCurrentUserAdmin() {
     alert("Erro ao definir como admin: " + error.message);
   }
 }
+
+
+// Função para controlar o modo escuro
+function setupDarkMode() {
+    // Verificar se há uma preferência salva no localStorage
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    
+    // Criar e adicionar o toggle de tema ao header
+    const userInfo = document.querySelector('.user-info');
+    
+    // Criar o wrapper do switch
+    const themeSwitch = document.createElement('div');
+    themeSwitch.className = 'theme-switch-wrapper';
+    
+    // Criar o label e o input
+    const switchLabel = document.createElement('label');
+    switchLabel.className = 'theme-switch';
+    
+    const switchInput = document.createElement('input');
+    switchInput.type = 'checkbox';
+    switchInput.id = 'theme-switch';
+    switchInput.checked = currentTheme === 'dark';
+    
+    const slider = document.createElement('span');
+    slider.className = 'slider';
+    
+    // Montar a estrutura do switch
+    switchLabel.appendChild(switchInput);
+    switchLabel.appendChild(slider);
+    themeSwitch.appendChild(switchLabel);
+    
+    // Criar o ícone
+    const themeIcon = document.createElement('i');
+    themeIcon.className = currentTheme === 'dark' 
+      ? 'fas fa-moon theme-icon' 
+      : 'fas fa-sun theme-icon';
+    themeSwitch.appendChild(themeIcon);
+    
+    // Inserir antes do botão de logout
+    userInfo.insertBefore(themeSwitch, document.getElementById('logout-btn'));
+    
+    // Adicionar event listener para o switch
+    switchInput.addEventListener('change', function() {
+      if (this.checked) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+        themeIcon.className = 'fas fa-moon theme-icon';
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+        themeIcon.className = 'fas fa-sun theme-icon';
+      }
+    });
+  }
+  
+  // Adicionar a função setupDarkMode nos Event Listeners
+  document.addEventListener("DOMContentLoaded", () => {
+    // Verificar sessão existente
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+        if (session) {
+          currentUser = session.user;
+          showDashboard();
+          
+          // Configurar modo escuro após o login
+          setupDarkMode();
+        }
+      } else if (event === "SIGNED_OUT") {
+        loginPage.style.display = "block";
+        dashboardPage.style.display = "none";
+      }
+    });
+  
+    // Restante do código existente...
+  });
+  
+  // Verificar preferências do sistema do usuário
+  function checkSystemPreference() {
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('theme', 'dark');
+      
+      // Se o switch já existe, atualizá-lo
+      const switchInput = document.getElementById('theme-switch');
+      if (switchInput) switchInput.checked = true;
+      
+      const themeIcon = document.querySelector('.theme-icon');
+      if (themeIcon) themeIcon.className = 'fas fa-moon theme-icon';
+    }
+  }
+  
+  // Executar no carregamento inicial se não houver preferência salva
+  if (!localStorage.getItem('theme')) {
+    checkSystemPreference();
+  }
+  
+  // Adicionar listener para mudanças na preferência do sistema
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    if (!localStorage.getItem('theme')) {
+      const newTheme = e.matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      
+      // Se o switch já existe, atualizá-lo
+      const switchInput = document.getElementById('theme-switch');
+      if (switchInput) switchInput.checked = e.matches;
+      
+      const themeIcon = document.querySelector('.theme-icon');
+      if (themeIcon) {
+        themeIcon.className = e.matches 
+          ? 'fas fa-moon theme-icon' 
+          : 'fas fa-sun theme-icon';
+      }
+    }
+  });
