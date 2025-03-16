@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meu CRM</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- Loading spinner -->
+    <div class="loading">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Tela de Login -->
+    <div id="login-page">
+      <div class="login-container">
+        <div class="login-card">
+          <div class="login-header">
+            <h1>Meu CRM</h1>
+            <p>Faça login para acessar o sistema</p>
+          </div>
+          <div
+            id="login-alert"
+            class="alert alert-danger"
+            style="display: none"
+          ></div>
+          <form class="login-form" id="login-form">
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input
+                type="email"
+                class="form-control"
+                id="email"
+                placeholder="Seu email"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="password">Senha</label>
+              <input
+                type="password"
+                class="form-control"
+                id="password"
+                placeholder="Sua senha"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <button type="submit" class="btn btn-primary">Entrar</button>
+            </div>
+          </form>
+          <p style="text-align: center; margin-top: 1rem">
+            Não tem uma conta? <a href="#" id="register-link">Registre-se</a>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Registro -->
+    <div id="register-modal" class="modal">
+      <div class="modal-content">
+        <span class="close" id="close-register">&times;</span>
+        <h2>Criar Conta</h2>
+        <div
+          id="register-alert"
+          class="alert alert-danger"
+          style="display: none"
+        ></div>
+        <form id="register-form">
+          <div class="form-group">
+            <label for="register-name">Nome</label>
+            <input
+              type="text"
+              class="form-control"
+              id="register-name"
+              placeholder="Seu nome completo"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="register-email">Email</label>
+            <input
+              type="email"
+              class="form-control"
+              id="register-email"
+              placeholder="Seu email"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="register-password">Senha</label>
+            <input
+              type="password"
+              class="form-control"
+              id="register-password"
+              placeholder="Sua senha"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <button type="submit" class="btn btn-primary">Registrar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Dashboard principal -->
+    <div id="dashboard-page" style="display: none">
+      <header>
+        <div class="header-content container">
+          <button class="toggle-menu" id="toggle-menu">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="logo">
+            <h1>Meu CRM</h1>
+          </div>
+          <div class="user-info">
+            <div class="user-avatar" id="user-avatar"></div>
+            <div class="user-name" id="user-name"></div>
+            <button class="btn btn-sm" id="logout-btn">Sair</button>
+          </div>
+        </div>
+      </header>
+      <!-- Adicione este botão aqui -->
+      <button
+        onclick="makeCurrentUserAdmin()"
+        style="
+          position: fixed;
+          bottom: 10px;
+          right: 10px;
+          z-index: 9999;
+          background-color: #e74c3c;
+          color: white;
+          padding: 10px;
+          border: none;
+          border-radius: 4px;
+        "
+      >
+        Tornar-me Admin
+      </button>
+
+      <div class="overlay" id="overlay"></div>
+
+      <div class="main-content">
+        <aside class="sidebar" id="sidebar">
+          <ul class="sidebar-menu">
+            <li>
+              <a href="#" data-page="dashboard" class="active"
+                ><i class="fas fa-tachometer-alt"></i> Dashboard</a
+              >
+            </li>
+            <li>
+              <a href="#" data-page="clients"
+                ><i class="fas fa-users"></i> Clientes</a
+              >
+            </li>
+            <li>
+              <a href="#" data-page="services"
+                ><i class="fas fa-cogs"></i> Serviços</a
+              >
+            </li>
+            <li>
+              <a href="#" data-page="orders"
+                ><i class="fas fa-clipboard-list"></i> Ordens de Serviço</a
+              >
+            </li>
+            <li>
+              <a href="#" data-page="finance"
+                ><i class="fas fa-dollar-sign"></i> Financeiro</a
+              >
+            </li>
+            <li class="admin-only">
+              <a href="#" data-page="users"
+                ><i class="fas fa-user-cog"></i> Usuários</a
+              >
+            </li>
+          </ul>
+        </aside>
+
+        <div class="content">
+          <!-- Dashboard Page -->
+          <div class="page active" id="dashboard">
+            <h1>Dashboard</h1>
+            <div class="dashboard-stats">
+              <div class="stat-card">
+                <div class="stat-value" id="total-clients">0</div>
+                <div class="stat-label">Total de Clientes</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value" id="total-services">0</div>
+                <div class="stat-label">Total de Serviços</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value" id="pending-orders">0</div>
+                <div class="stat-label">Ordens Pendentes</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value" id="total-revenue">R$ 0</div>
+                <div class="stat-label">Receita Total</div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h2>Ordens Recentes</h2>
+              </div>
+              <div id="recent-orders-container">
+                <table id="recent-orders-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Cliente</th>
+                      <th>Serviço</th>
+                      <th>Status</th>
+                      <th>Data</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recent-orders">
+                    <!-- Dados de ordens recentes -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Clients Page -->
+          <div class="page" id="clients">
+            <h1>Clientes</h1>
+            <div class="card">
+              <div class="card-header">
+                <h2>Lista de Clientes</h2>
+                <button class="btn btn-primary" id="add-client-btn">
+                  Adicionar Cliente
+                </button>
+              </div>
+              <div class="search-box">
+                <input
+                  type="text"
+                  id="client-search"
+                  placeholder="Buscar cliente..."
+                />
+              </div>
+              <div id="clients-container">
+                <table id="clients-table">
+                  <thead>
+                    <tr>
+                      <th>Nome</th>
+                      <th>Email</th>
+                      <th>Telefone</th>
+                      <th>Endereço</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="clients-list">
+                    <!-- Dados de clientes -->
+                  </tbody>
+                </table>
+                <div class="pagination" id="clients-pagination"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Services Page -->
+          <div class="page" id="services">
+            <h1>Serviços</h1>
+            <div class="card">
+              <div class="card-header">
+                <h2>Lista de Serviços</h2>
+                <button class="btn btn-primary" id="add-service-btn">
+                  Adicionar Serviço
+                </button>
+              </div>
+              <div class="search-box">
+                <input
+                  type="text"
+                  id="service-search"
+                  placeholder="Buscar serviço..."
+                />
+              </div>
+              <div id="services-container">
+                <table id="services-table">
+                  <thead>
+                    <tr>
+                      <th>Nome</th>
+                      <th>Descrição</th>
+                      <th>Preço</th>
+                      <th>Garantia (dias)</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="services-list">
+                    <!-- Dados de serviços -->
+                  </tbody>
+                </table>
+                <div class="pagination" id="services-pagination"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Orders Page -->
+          <div class="page" id="orders">
+            <h1>Ordens de Serviço</h1>
+            <div class="card">
+              <div class="card-header">
+                <h2>Lista de Ordens</h2>
+                <button class="btn btn-primary" id="add-order-btn">
+                  Nova Ordem
+                </button>
+              </div>
+              <div class="search-box">
+                <input
+                  type="text"
+                  id="order-search"
+                  placeholder="Buscar ordem..."
+                />
+              </div>
+              <div id="orders-container">
+                <table id="orders-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Cliente</th>
+                      <th>Serviço</th>
+                      <th>Status</th>
+                      <th>Data</th>
+                      <th>Valor</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="orders-list">
+                    <!-- Dados de ordens -->
+                  </tbody>
+                </table>
+                <div class="pagination" id="orders-pagination"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Finance Page -->
+          <div class="page" id="finance">
+            <h1>Financeiro</h1>
+            <div class="card">
+              <div class="card-header">
+                <h2>Resumo Financeiro</h2>
+              </div>
+              <div class="dashboard-stats">
+                <div class="stat-card">
+                  <div class="stat-value" id="total-income">R$ 0</div>
+                  <div class="stat-label">Receita Total</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-value" id="monthly-income">R$ 0</div>
+                  <div class="stat-label">Receita Mensal</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-value" id="pending-payments">R$ 0</div>
+                  <div class="stat-label">Pagamentos Pendentes</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h2>Transações Recentes</h2>
+              </div>
+              <div id="transactions-container">
+                <table id="transactions-table">
+                  <thead>
+                    <tr>
+                      <th>Ordem</th>
+                      <th>Cliente</th>
+                      <th>Valor</th>
+                      <th>Status</th>
+                      <th>Data</th>
+                    </tr>
+                  </thead>
+                  <tbody id="transactions-list">
+                    <!-- Dados de transações -->
+                  </tbody>
+                </table>
+                <div class="pagination" id="transactions-pagination"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Users Page -->
+          <div class="page" id="users">
+            <h1>Usuários</h1>
+            <div class="card">
+              <div class="card-header">
+                <h2>Lista de Usuários</h2>
+                <button class="btn btn-primary" id="add-user-btn">
+                  Adicionar Usuário
+                </button>
+              </div>
+              <div id="users-container">
+                <table id="users-table">
+                  <thead>
+                    <tr>
+                      <th>Nome</th>
+                      <th>Email</th>
+                      <th>Função</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="users-list">
+                    <!-- Dados de usuários -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Cliente -->
+    <div id="client-modal" class="modal">
+      <div class="modal-content">
+        <span class="close" id="close-client">&times;</span>
+        <h2 id="client-modal-title">Adicionar Cliente</h2>
+        <form id="client-form">
+          <input type="hidden" id="client-id" />
+          <div class="form-group">
+            <label for="client-name">Nome</label>
+            <input type="text" class="form-control" id="client-name" required />
+          </div>
+          <div class="form-group">
+            <label for="client-email">Email</label>
+            <input
+              type="email"
+              class="form-control"
+              id="client-email"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="client-phone">Telefone</label>
+            <input
+              type="text"
+              class="form-control"
+              id="client-phone"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="client-address">Endereço</label>
+            <input
+              type="text"
+              class="form-control"
+              id="client-address"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <button type="submit" class="btn btn-primary">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal de Serviço -->
+    <div id="service-modal" class="modal">
+      <div class="modal-content">
+        <span class="close" id="close-service">&times;</span>
+        <h2 id="service-modal-title">Adicionar Serviço</h2>
+        <form id="service-form">
+          <input type="hidden" id="service-id" />
+          <div class="form-group">
+            <label for="service-name">Nome</label>
+            <input
+              type="text"
+              class="form-control"
+              id="service-name"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="service-description">Descrição</label>
+            <textarea
+              class="form-control"
+              id="service-description"
+              required
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label for="service-price">Preço (R$)</label>
+            <input
+              type="number"
+              step="0.01"
+              class="form-control"
+              id="service-price"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="service-warranty">Garantia (dias)</label>
+            <input
+              type="number"
+              class="form-control"
+              id="service-warranty"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <button type="submit" class="btn btn-primary">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal de Ordem de Serviço -->
+    <div id="order-modal" class="modal">
+      <div class="modal-content">
+        <span class="close" id="close-order">&times;</span>
+        <h2 id="order-modal-title">Nova Ordem de Serviço</h2>
+        <form id="order-form">
+          <input type="hidden" id="order-id" />
+          <div class="form-group">
+            <label for="order-client">Cliente</label>
+            <select class="form-control" id="order-client" required>
+              <option value="">Selecione um cliente</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="order-service">Serviço</label>
+            <select class="form-control" id="order-service" required>
+              <option value="">Selecione um serviço</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="order-description">Descrição do problema</label>
+            <textarea
+              class="form-control"
+              id="order-description"
+              required
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label for="order-status">Status</label>
+            <select class="form-control" id="order-status" required>
+              <option value="pending">Pendente</option>
+              <option value="in-progress">Em andamento</option>
+              <option value="completed">Concluído</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <button type="submit" class="btn btn-primary">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal de Usuário -->
+    <div id="user-modal" class="modal">
+      <div class="modal-content">
+        <span class="close" id="close-user">&times;</span>
+        <h2 id="user-modal-title">Adicionar Usuário</h2>
+        <form id="user-form">
+          <input type="hidden" id="user-id" />
+          <div class="form-group">
+            <label for="user-name">Nome</label>
+            <input type="text" class="form-control" id="user-name" required />
+          </div>
+          <div class="form-group">
+            <label for="user-email">Email</label>
+            <input type="email" class="form-control" id="user-email" required />
+          </div>
+          <div class="form-group">
+            <label for="user-password">Senha</label>
+            <input type="password" class="form-control" id="user-password" />
+            <small>(Deixe em branco para manter a senha atual)</small>
+          </div>
+          <div class="form-group">
+            <label for="user-role">Função</label>
+            <select class="form-control" id="user-role" required>
+              <option value="admin">Administrador</option>
+              <option value="user">Usuário Comum</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <button type="submit" class="btn btn-primary">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal de visualização de ordem de serviço -->
+    <div id="view-order-modal" class="modal">
+      <div class="modal-content">
+        <span class="close" id="close-view-order">&times;</span>
+        <h2>Detalhes da Ordem de Serviço</h2>
+        <div id="order-details">
+          <div class="form-group">
+            <label>Cliente:</label>
+            <div id="view-order-client"></div>
+          </div>
+          <div class="form-group">
+            <label>Serviço:</label>
+            <div id="view-order-service"></div>
+          </div>
+          <div class="form-group">
+            <label>Descrição:</label>
+            <div id="view-order-description"></div>
+          </div>
+          <div class="form-group">
+            <label>Status:</label>
+            <div id="view-order-status"></div>
+          </div>
+          <div class="form-group">
+            <label>Data:</label>
+            <div id="view-order-date"></div>
+          </div>
+          <div class="form-group">
+            <label>Valor:</label>
+            <div id="view-order-price"></div>
+          </div>
+          <div class="form-group">
+            <label>Garantia até:</label>
+            <div id="view-order-warranty"></div>
+          </div>
+        </div>
+      </div>
+      <button
+        onclick="makeCurrentUserAdmin()"
+        style="position: fixed; bottom: 10px; right: 10px; z-index: 9999"
+      >
+        Tornar-me Admin
+      </button>
+    </div>
+
+    <!-- importação da biblioteca Supabase para -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
