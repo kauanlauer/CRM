@@ -1230,3 +1230,830 @@
       height: 40px;
     }
   }
+
+
+
+
+
+
+  /* Estilos para o Sistema de Notificações */
+
+/* Ícone de notificação no header */
+.notification-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-circle);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    background-color: var(--bg-tertiary);
+  }
+  
+  .notification-icon:hover {
+    background-color: var(--primary-light);
+  }
+  
+  .notification-icon i {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+  }
+  
+  /* Badge para notificações não lidas */
+  .notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: var(--danger);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Painel de notificações */
+  .notification-panel {
+    position: absolute;
+    width: 350px;
+    max-height: 450px;
+    background-color: var(--bg-primary);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+    overflow: hidden;
+    transition: all var(--transition-normal);
+    animation: notificationPanelIn 0.2s ease;
+  }
+  
+  @keyframes notificationPanelIn {
+    from { 
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to { 
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Cabeçalho do painel de notificações */
+  .notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .notification-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+  }
+  
+  .notification-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+  }
+  
+  .notification-actions button {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: color var(--transition-fast);
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+  
+  .notification-actions button:hover {
+    color: var(--primary);
+  }
+  
+  /* Lista de notificações */
+  .notification-list {
+    overflow-y: auto;
+    max-height: 400px;
+  }
+  
+  .empty-notifications {
+    padding: var(--spacing-lg);
+    text-align: center;
+    color: var(--text-secondary);
+    font-style: italic;
+  }
+  
+  /* Item de notificação */
+  .notification-item {
+    display: flex;
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color var(--transition-fast);
+    position: relative;
+  }
+  
+  .notification-item:hover {
+    background-color: var(--bg-tertiary);
+  }
+  
+  .notification-item.unread {
+    background-color: var(--primary-light);
+  }
+  
+  .notification-item.unread:hover {
+    background-color: var(--primary-light);
+  }
+  
+  /* Ícones por tipo de notificação */
+  .notification-icon-info,
+  .notification-icon-warning,
+  .notification-icon-error,
+  .notification-icon-success {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-circle);
+    margin-right: var(--spacing-sm);
+    flex-shrink: 0;
+  }
+  
+  .notification-icon-info {
+    background-color: rgba(76, 201, 240, 0.2);
+    color: var(--info);
+  }
+  
+  .notification-icon-warning {
+    background-color: rgba(255, 159, 28, 0.2);
+    color: var(--warning);
+  }
+  
+  .notification-icon-error {
+    background-color: rgba(239, 71, 111, 0.2);
+    color: var(--danger);
+  }
+  
+  .notification-icon-success {
+    background-color: rgba(44, 182, 125, 0.2);
+    color: var(--success);
+  }
+  
+  /* Conteúdo da notificação */
+  .notification-content {
+    flex: 1;
+    padding-right: var(--spacing-md);
+  }
+  
+  .notification-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+    font-size: 0.9rem;
+  }
+  
+  .notification-message {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-bottom: var(--spacing-xs);
+    line-height: 1.4;
+  }
+  
+  .notification-time {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-style: italic;
+  }
+  
+  /* Ações para item individual */
+  .notification-item .notification-actions {
+    position: absolute;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+  }
+  
+  .notification-item:hover .notification-actions {
+    opacity: 1;
+  }
+  
+  /* Ajuste para modo escuro */
+  [data-theme="dark"] .notification-item.unread {
+    background-color: var(--primary-light);
+  }
+  
+  /* Responsividade para notificações */
+  @media (max-width: 768px) {
+    .notification-panel {
+      width: 100%;
+      max-width: 100%;
+      position: fixed;
+      top: 0 !important;
+      right: 0 !important;
+      bottom: 0;
+      max-height: none;
+      border-radius: 0;
+    }
+    
+    .notification-list {
+      max-height: calc(100vh - 50px);
+    }
+  }
+
+
+
+  /* Estilos para o Modo de Impressão */
+
+/* Estilos que só se aplicam na impressão */
+@media print {
+    /* Esconder elementos que não devem ser impressos */
+    header,
+    .sidebar,
+    .toggle-menu,
+    #logout-btn,
+    .notification-icon,
+    .theme-switch-wrapper,
+    .btn,
+    .actions,
+    .search-box,
+    .pagination,
+    .modal,
+    .overlay,
+    .loading {
+      display: none !important;
+    }
+    
+    /* Ajustar layout geral para impressão */
+    body {
+      background-color: white !important;
+      color: black !important;
+      font-size: 12pt;
+      line-height: 1.4;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: serif; /* Fontes serif são mais legíveis em impressos */
+    }
+    
+    .main-content {
+      display: block;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: visible;
+    }
+    
+    .content {
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: visible;
+    }
+    
+    /* Garantir que elementos com cores de fundo sejam impressos */
+    * {
+      -webkit-print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
+    
+    /* Evitar cortes em tabelas */
+    table {
+      display: table;
+      width: 100%;
+      page-break-inside: avoid;
+      border-collapse: collapse;
+    }
+    
+    tr {
+      page-break-inside: avoid;
+    }
+    
+    /* Melhorar a legibilidade das tabelas */
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    
+    th {
+      font-weight: bold;
+      background-color: #f2f2f2 !important;
+    }
+    
+    /* Ajustar links para mostrar URLs */
+    a::after {
+      content: " (" attr(href) ")";
+      font-size: 90%;
+      font-style: italic;
+    }
+    
+    /* Evitar quebras em elementos importantes */
+    h1, h2, h3, h4, h5, h6, 
+    .card-header, 
+    .stat-card {
+      page-break-after: avoid;
+      page-break-inside: avoid;
+    }
+    
+    /* Quebras de página automáticas entre seções */
+    .page {
+      page-break-after: always;
+    }
+    
+    .page:last-child {
+      page-break-after: auto;
+    }
+    
+    /* Estilos específicos para badge em impressões */
+    .badge {
+      border: 1px solid #000;
+      padding: 2px 5px;
+    }
+    
+    .badge-pending {
+      background-color: #fff3e0 !important;
+      color: #e65100 !important;
+      border-color: #e65100 !important;
+    }
+    
+    .badge-in-progress {
+      background-color: #e3f2fd !important;
+      color: #0d47a1 !important;
+      border-color: #0d47a1 !important;
+    }
+    
+    .badge-completed {
+      background-color: #e8f5e9 !important;
+      color: #1b5e20 !important;
+      border-color: #1b5e20 !important;
+    }
+    
+    .badge-canceled {
+      background-color: #ffebee !important;
+      color: #c62828 !important;
+      border-color: #c62828 !important;
+    }
+    
+    /* Ajustes para dash stats */
+    .dashboard-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    
+    .stat-card {
+      flex: 1 0 45%;
+      max-width: 45%;
+      margin-bottom: 20px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-left-width: 5px;
+    }
+    
+    /* Configuração de cabeçalho e rodapé da página */
+    @page {
+      margin: 2cm;
+      size: auto;
+      
+      @top-center {
+        content: "Meu CRM - Relatório";
+        font-family: sans-serif;
+        font-size: 10pt;
+      }
+      
+      @bottom-center {
+        content: "Página " counter(page) " de " counter(pages);
+        font-family: sans-serif;
+        font-size: 10pt;
+      }
+    }
+    
+    /* Estilos específicos para documentos impressos */
+    .print-header {
+      display: block !important;
+      text-align: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #000;
+      padding-bottom: 10px;
+    }
+    
+    .print-header h1 {
+      font-size: 18pt;
+      margin: 0;
+    }
+    
+    .print-header .company-info {
+      font-size: 10pt;
+      margin-top: 5px;
+    }
+    
+    .print-footer {
+      display: block !important;
+      text-align: center;
+      margin-top: 20px;
+      border-top: 1px solid #000;
+      padding-top: 10px;
+      font-size: 9pt;
+    }
+    
+    /* Instruções de impressão (não serão impressas) */
+    .print-instructions {
+      display: none;
+    }
+    
+    /* Classe para forçar page break */
+    .page-break {
+      page-break-before: always;
+    }
+    
+    /* Estilo específico para visualização de ordem de serviço */
+    .order-details-print {
+      display: block !important;
+      border: 1px solid #000;
+      padding: 15px;
+      margin: 20px 0;
+    }
+    
+    .order-details-print h2 {
+      text-align: center;
+      border-bottom: 2px solid #000;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .order-details-print .detail-row {
+      display: flex;
+      margin-bottom: 10px;
+    }
+    
+    .order-details-print .detail-label {
+      font-weight: bold;
+      width: 150px;
+    }
+    
+    .order-details-print .detail-value {
+      flex: 1;
+    }
+    
+    .order-details-print .signatures {
+      margin-top: 50px;
+      display: flex;
+      justify-content: space-around;
+    }
+    
+    .order-details-print .signature-line {
+      width: 200px;
+      border-top: 1px solid #000;
+      margin-top: 30px;
+      text-align: center;
+    }
+  }
+
+
+  /* Estilos para o Sistema de Modo Offline e Sincronização */
+
+/* Indicador de Conexão */
+.connection-indicator {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-circle);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    background-color: var(--bg-tertiary);
+    margin-right: var(--spacing-sm);
+  }
+  
+  .connection-indicator:hover {
+    background-color: var(--primary-light);
+  }
+  
+  .connection-indicator i {
+    font-size: 1.1rem;
+  }
+  
+  .text-success {
+    color: var(--success);
+  }
+  
+  .text-danger {
+    color: var(--danger);
+  }
+  
+  .text-warning {
+    color: var(--warning);
+  }
+  
+  /* Badge para itens pendentes de sincronização */
+  .sync-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+  
+  .sync-badge-success {
+    background-color: var(--success);
+    color: white;
+  }
+  
+  .sync-badge-warning {
+    background-color: var(--warning);
+    color: white;
+  }
+  
+  .sync-badge-danger {
+    background-color: var(--danger);
+    color: white;
+  }
+  
+  /* Popup de sincronização */
+  .sync-popup {
+    position: absolute;
+    width: 350px;
+    max-height: 450px;
+    background-color: var(--bg-primary);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+    overflow: hidden;
+    transition: all var(--transition-normal);
+    animation: syncPopupIn 0.2s ease;
+  }
+  
+  @keyframes syncPopupIn {
+    from { 
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to { 
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Cabeçalho do popup de sincronização */
+  .sync-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .sync-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+  }
+  
+  .close-sync {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color var(--transition-fast);
+  }
+  
+  .close-sync:hover {
+    color: var(--danger);
+  }
+  
+  /* Conteúdo do popup de sincronização */
+  .sync-content {
+    padding: var(--spacing-md);
+  }
+  
+  .sync-status {
+    margin-bottom: var(--spacing-md);
+  }
+  
+  .sync-status p {
+    margin: var(--spacing-xs) 0;
+  }
+  
+  .sync-queue h4 {
+    font-size: 1rem;
+    margin-bottom: var(--spacing-sm);
+  }
+  
+  .sync-queue-items {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-sm);
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+  }
+  
+  .empty-queue {
+    color: var(--text-secondary);
+    font-style: italic;
+    text-align: center;
+    padding: var(--spacing-md) 0;
+  }
+  
+  .sync-items-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .sync-items-list li {
+    padding: var(--spacing-xs) 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .sync-items-list li:last-child {
+    border-bottom: none;
+  }
+  
+  .sync-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: var(--spacing-md);
+  }
+  
+  /* Sistema de notificações */
+  #notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 320px;
+    max-width: 100%;
+    z-index: 9999;
+  }
+  
+  .notification {
+    display: flex;
+    align-items: flex-start;
+    background-color: var(--bg-primary);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    margin-bottom: 10px;
+    padding: 15px;
+    animation: notificationIn 0.3s ease;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    border-left: 4px solid var(--info);
+    overflow: hidden;
+  }
+  
+  @keyframes notificationIn {
+    from {
+      opacity: 0;
+      transform: translateX(50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  .notification-hide {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  
+  .notification-info {
+    border-left-color: var(--info);
+  }
+  
+  .notification-success {
+    border-left-color: var(--success);
+  }
+  
+  .notification-warning {
+    border-left-color: var(--warning);
+  }
+  
+  .notification-error {
+    border-left-color: var(--danger);
+  }
+  
+  .notification-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    margin-right: 15px;
+    flex-shrink: 0;
+  }
+  
+  .notification-info .notification-icon {
+    color: var(--info);
+  }
+  
+  .notification-success .notification-icon {
+    color: var(--success);
+  }
+  
+  .notification-warning .notification-icon {
+    color: var(--warning);
+  }
+  
+  .notification-error .notification-icon {
+    color: var(--danger);
+  }
+  
+  .notification-content {
+    flex: 1;
+  }
+  
+  .notification-title {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--text-primary);
+  }
+  
+  .notification-message {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+  
+  .notification-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: color var(--transition-fast);
+    margin-left: 10px;
+    padding: 0;
+  }
+  
+  .notification-close:hover {
+    color: var(--danger);
+  }
+  
+  /* Destacar itens offline na interface */
+  .offline-item {
+    position: relative;
+  }
+  
+  .offline-item::after {
+    content: "•";
+    display: inline-block;
+    color: var(--warning);
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+  
+  /* Responsividade */
+  @media (max-width: 768px) {
+    .sync-popup {
+      width: 100%;
+      max-width: 100%;
+      position: fixed;
+      top: 0 !important;
+      right: 0 !important;
+      bottom: 0;
+      left: 0;
+      max-height: none;
+      border-radius: 0;
+    }
+    
+    .sync-content {
+      height: calc(100vh - 50px);
+      overflow-y: auto;
+    }
+    
+    #notification-container {
+      width: calc(100% - 40px);
+      top: 10px;
+      right: 10px;
+    }
+  }
+  
+  /* Ajustes para o modo escuro */
+  [data-theme="dark"] .notification {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  }
+  
+  [data-theme="dark"] .sync-popup {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  }
