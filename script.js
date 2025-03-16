@@ -1,15 +1,16 @@
 // Inicialização do Supabase
-const supabaseUrl = 'https://kngcohputrawfkexcsmz.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtuZ2NvaHB1dHJhd2ZrZXhjc216Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwOTQ1ODMsImV4cCI6MjA1NzY3MDU4M30.MT3gfizwHeWR7IsaDdfxFTlrkG5HrpwpWQlPnGUTozs';
+const supabaseUrl = "https://kngcohputrawfkexcsmz.supabase.co";
+const supabaseKey =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtuZ2NvaHB1dHJhd2ZrZXhjc216Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwOTQ1ODMsImV4cCI6MjA1NzY3MDU4M30.MT3gfizwHeWR7IsaDdfxFTlrkG5HrpwpWQlPnGUTozs";
 
 // Corrigir a inicialização do cliente Supabase
 let supabase;
 if (window.supabase) {
-    supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+  supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 } else if (window.supabaseJs) {
-    supabase = window.supabaseJs.createClient(supabaseUrl, supabaseKey);
+  supabase = window.supabaseJs.createClient(supabaseUrl, supabaseKey);
 } else {
-    console.error('Biblioteca Supabase não encontrada!');
+  console.error("Biblioteca Supabase não encontrada!");
 }
 
 // Variáveis globais
@@ -131,17 +132,19 @@ function formatCurrency(value) {
 }
 
 function getStatusBadge(status) {
-  switch (status) {
-    case "pending":
-      return '<span class="badge badge-pending">Pendente</span>';
-    case "in-progress":
-      return '<span class="badge badge-in-progress">Em andamento</span>';
-    case "completed":
-      return '<span class="badge badge-completed">Concluído</span>';
-    default:
-      return status;
+    switch (status) {
+      case "pending":
+        return '<span class="badge badge-pending">Pendente</span>';
+      case "in-progress":
+        return '<span class="badge badge-in-progress">Em andamento</span>';
+      case "canceled":  // Corrigido de "Cancelado" para "canceled" para corresponder ao value da option
+        return '<span class="badge badge-canceled">Cancelado</span>';
+      case "completed":  // Corrigido para corresponder ao value da option
+        return '<span class="badge badge-completed">Concluído</span>';
+      default:
+        return status;
+    }
   }
-}
 
 function getStatusText(status) {
   switch (status) {
@@ -151,6 +154,8 @@ function getStatusText(status) {
       return "Em andamento";
     case "completed":
       return "Concluído";
+      case "cancelado":
+      return "Cancelado";
     default:
       return status;
   }
@@ -205,24 +210,24 @@ async function handleLogin(e) {
     currentUser = data.user;
 
     // Verificar se é o primeiro login e definir como admin se for
-if (!currentUser.user_metadata || !currentUser.user_metadata.role) {
-    // Verificar se há outros usuários na tabela users
-    const { data: usersData, error: usersError } = await supabase
-        .from('users')
-        .select('count');
-    
-    let role = 'user';
-    if (!usersError && (!usersData || usersData.length === 0)) {
-        role = 'admin';
+    if (!currentUser.user_metadata || !currentUser.user_metadata.role) {
+      // Verificar se há outros usuários na tabela users
+      const { data: usersData, error: usersError } = await supabase
+        .from("users")
+        .select("count");
+
+      let role = "user";
+      if (!usersError && (!usersData || usersData.length === 0)) {
+        role = "admin";
+      }
+
+      // Atualizar metadados do usuário
+      await supabase.auth.updateUser({
+        data: { role: role },
+      });
+
+      currentUser.user_metadata = { role: role };
     }
-    
-    // Atualizar metadados do usuário
-    await supabase.auth.updateUser({
-        data: { role: role }
-    });
-    
-    currentUser.user_metadata = { role: role };
-}
 
     showDashboard();
   } catch (error) {
@@ -233,43 +238,47 @@ if (!currentUser.user_metadata || !currentUser.user_metadata.role) {
 }
 
 async function handleRegister(e) {
-    e.preventDefault();
-    
-    const name = document.getElementById('register-name').value;
-    const email = document.getElementById('register-email').value;
-    const password = document.getElementById('register-password').value;
-    
-    if (password.length < 6) {
-        showAlert('register-alert', 'A senha deve ter pelo menos 6 caracteres');
-        return;
-    }
-    
-    showLoading();
-    try {
-        // Email kauanlauer@gmail.com sempre será admin
-        const isAdmin = email.toLowerCase() === 'kauanlauer@gmail.com';
-        
-        const { data, error } = await supabase.auth.signUp({
-            email: email,
-            password: password,
-            options: {
-                data: {
-                    name: name,
-                    role: isAdmin ? 'admin' : 'user'
-                }
-            }
-        });
-        
-        if (error) throw error;
-        
-        registerModal.style.display = 'none';
-        showAlert('login-alert', 'Conta criada com sucesso! Faça login para continuar.', 'success');
-        document.getElementById('register-form').reset();
-    } catch (error) {
-        showAlert('register-alert', 'Erro ao criar conta: ' + error.message);
-    } finally {
-        hideLoading();
-    }
+  e.preventDefault();
+
+  const name = document.getElementById("register-name").value;
+  const email = document.getElementById("register-email").value;
+  const password = document.getElementById("register-password").value;
+
+  if (password.length < 6) {
+    showAlert("register-alert", "A senha deve ter pelo menos 6 caracteres");
+    return;
+  }
+
+  showLoading();
+  try {
+    // Email kauanlauer@gmail.com sempre será admin
+    const isAdmin = email.toLowerCase() === "kauanlauer@gmail.com";
+
+    const { data, error } = await supabase.auth.signUp({
+      email: email,
+      password: password,
+      options: {
+        data: {
+          name: name,
+          role: isAdmin ? "admin" : "user",
+        },
+      },
+    });
+
+    if (error) throw error;
+
+    registerModal.style.display = "none";
+    showAlert(
+      "login-alert",
+      "Conta criada com sucesso! Faça login para continuar.",
+      "success"
+    );
+    document.getElementById("register-form").reset();
+  } catch (error) {
+    showAlert("register-alert", "Erro ao criar conta: " + error.message);
+  } finally {
+    hideLoading();
+  }
 }
 
 async function handleLogout() {
@@ -616,26 +625,26 @@ async function deleteClient(clientId) {
 }
 
 async function handleClientForm(e) {
-    e.preventDefault();
-  
-    const clientId = document.getElementById("client-id").value;
-    const name = document.getElementById("client-name").value;
-    const email = document.getElementById("client-email").value || ""; // Usa string vazia se for nulo
-    const phone = document.getElementById("client-phone").value || "";
-    const address = document.getElementById("client-address").value || "";
-    
-    // Validar apenas o nome do cliente
-    if (!name.trim()) {
-      alert("O nome do cliente é obrigatório!");
-      return;
-    }
-  
-    const clientData = {
-      name,
-      email,
-      phone,
-      address,
-    };
+  e.preventDefault();
+
+  const clientId = document.getElementById("client-id").value;
+  const name = document.getElementById("client-name").value;
+  const email = document.getElementById("client-email").value || ""; // Usa string vazia se for nulo
+  const phone = document.getElementById("client-phone").value || "";
+  const address = document.getElementById("client-address").value || "";
+
+  // Validar apenas o nome do cliente
+  if (!name.trim()) {
+    alert("O nome do cliente é obrigatório!");
+    return;
+  }
+
+  const clientData = {
+    name,
+    email,
+    phone,
+    address,
+  };
 
   showLoading();
   try {
@@ -960,9 +969,11 @@ function renderOrdersTable(searchTerm = "") {
 
   // Adicionar event listeners para os botões
   document.querySelectorAll(".view-order").forEach((button) => {
-    button.addEventListener("click", (e) => viewOrder(e.currentTarget.dataset.id));
+    button.addEventListener("click", (e) =>
+      viewOrder(e.currentTarget.dataset.id)
+    );
   });
-  
+
   document.querySelectorAll(".edit-order").forEach((button) => {
     button.addEventListener("click", (e) => editOrder(e.target.dataset.id));
   });
@@ -1047,19 +1058,19 @@ function showOrderModal(isEdit = false) {
 }
 
 // Add event listener for service selection to set default price
-orderServiceSelect.addEventListener('change', function() {
-    const serviceId = this.value;
-    if (serviceId) {
-      const service = services.find(s => s.id === serviceId);
-      if (service) {
-        // Only set default price if the price field is empty or 0
-        const priceField = document.getElementById("order-price");
-        if (!priceField.value || parseFloat(priceField.value) === 0) {
-          priceField.value = service.price;
-        }
+orderServiceSelect.addEventListener("change", function () {
+  const serviceId = this.value;
+  if (serviceId) {
+    const service = services.find((s) => s.id === serviceId);
+    if (service) {
+      // Only set default price if the price field is empty or 0
+      const priceField = document.getElementById("order-price");
+      if (!priceField.value || parseFloat(priceField.value) === 0) {
+        priceField.value = service.price;
       }
     }
-  });
+  }
+});
 
 function viewOrder(orderId) {
   const order = orders.find((o) => o.id === orderId);
@@ -1099,26 +1110,25 @@ function viewOrder(orderId) {
   document.getElementById("view-order-warranty").textContent = warrantyDate;
 
   viewOrderModal.style.display = "block";
-  
 }
 
 function editOrder(orderId) {
-    const order = orders.find((o) => o.id === orderId);
-    if (!order) return;
-  
-    document.getElementById("order-id").value = order.id;
-  
-    showOrderModal(true);
-  
-    // Aguardar o preenchimento dos selects
-    setTimeout(() => {
-      document.getElementById("order-client").value = order.client_id;
-      document.getElementById("order-service").value = order.service_id;
-      document.getElementById("order-description").value = order.description;
-      document.getElementById("order-status").value = order.status;
-      document.getElementById("order-price").value = order.price; // Add this line
-    }, 100);
-  }
+  const order = orders.find((o) => o.id === orderId);
+  if (!order) return;
+
+  document.getElementById("order-id").value = order.id;
+
+  showOrderModal(true);
+
+  // Aguardar o preenchimento dos selects
+  setTimeout(() => {
+    document.getElementById("order-client").value = order.client_id;
+    document.getElementById("order-service").value = order.service_id;
+    document.getElementById("order-description").value = order.description;
+    document.getElementById("order-status").value = order.status;
+    document.getElementById("order-price").value = order.price; // Add this line
+  }, 100);
+}
 
 async function deleteOrder(orderId) {
   if (
@@ -1152,82 +1162,86 @@ async function deleteOrder(orderId) {
 }
 
 async function handleOrderForm(e) {
-    e.preventDefault();
-  
-    const orderId = document.getElementById("order-id").value;
-    const clientId = document.getElementById("order-client").value;
-    const serviceId = document.getElementById("order-service").value;
-    const description = document.getElementById("order-description").value;
-    const status = document.getElementById("order-status").value;
-    
-    // Usar o preço inserido manualmente em vez do preço do serviço
-    const price = parseFloat(document.getElementById("order-price").value) || 0;
-  
-    // Verificar se o serviço existe
-    const service = services.find((s) => s.id === serviceId);
-    if (!service) {
-      alert("Serviço inválido. Por favor, selecione um serviço.");
-      return;
-    }
-  
-    const orderData = {
-      client_id: clientId,
-      service_id: serviceId,
-      description,
-      status,
-      price // Usar o preço inserido manualmente
-    };
-  
-    if (!orderId) {
-      // Nova ordem, incluir data de criação
-      orderData.created_at = new Date().toISOString();
-    } else {
-      // Ordem existente, incluir data de atualização
-      orderData.updated_at = new Date().toISOString();
-    }
-  
-    showLoading();
-    try {
-      let result;
-  
-      if (orderId) {
-        // Editar ordem existente
-        result = await supabase
-          .from("orders")
-          .update(orderData)
-          .eq("id", orderId);
-      } else {
-        // Criar nova ordem
-        result = await supabase.from("orders").insert([orderData]);
-      }
-  
-      if (result.error) throw result.error;
-  
-      // Fechar modal e limpar formulário
-      orderModal.style.display = "none";
-      orderForm.reset();
-      document.getElementById("order-id").value = "";
-  
-      // Atualizar lista de ordens
-      await loadOrders();
-  
-      // Atualizar estatísticas
-      updateStats();
-  
-      // Atualizar ordens recentes
-      loadRecentOrders();
-    } catch (error) {
-      console.error("Erro ao salvar ordem de serviço:", error);
-      alert("Erro ao salvar ordem de serviço: " + error.message);
-    } finally {
-      hideLoading();
-    }
+  e.preventDefault();
+
+  const orderId = document.getElementById("order-id").value;
+  const clientId = document.getElementById("order-client").value;
+  const serviceId = document.getElementById("order-service").value;
+  const description = document.getElementById("order-description").value;
+  const status = document.getElementById("order-status").value;
+
+  // Usar o preço inserido manualmente em vez do preço do serviço
+  const price = parseFloat(document.getElementById("order-price").value) || 0;
+
+  // Verificar se o serviço existe
+  const service = services.find((s) => s.id === serviceId);
+  if (!service) {
+    alert("Serviço inválido. Por favor, selecione um serviço.");
+    return;
   }
+
+  const orderData = {
+    client_id: clientId,
+    service_id: serviceId,
+    description,
+    status,
+    price, // Usar o preço inserido manualmente
+  };
+
+  if (!orderId) {
+    // Nova ordem, incluir data de criação
+    orderData.created_at = new Date().toISOString();
+  } else {
+    // Ordem existente, incluir data de atualização
+    orderData.updated_at = new Date().toISOString();
+  }
+
+  showLoading();
+  try {
+    let result;
+
+    if (orderId) {
+      // Editar ordem existente
+      result = await supabase
+        .from("orders")
+        .update(orderData)
+        .eq("id", orderId);
+    } else {
+      // Criar nova ordem
+      result = await supabase.from("orders").insert([orderData]);
+    }
+
+    if (result.error) throw result.error;
+
+    // Fechar modal e limpar formulário
+    orderModal.style.display = "none";
+    orderForm.reset();
+    document.getElementById("order-id").value = "";
+
+    // Atualizar lista de ordens
+    await loadOrders();
+
+    // Atualizar estatísticas
+    updateStats();
+
+    // Atualizar ordens recentes
+    loadRecentOrders();
+  } catch (error) {
+    console.error("Erro ao salvar ordem de serviço:", error);
+    alert("Erro ao salvar ordem de serviço: " + error.message);
+  } finally {
+    hideLoading();
+  }
+}
 
 // Funções de Usuário
 async function loadUsers() {
   try {
-    const { data, error } = await supabase.auth.admin.listUsers();
+    // Em vez de usar supabase.auth.admin.listUsers(), vamos buscar da tabela profile
+    const { data, error } = await supabase
+      .from("profile")
+      .select("*")
+      .order("name");
 
     if (error) throw error;
 
@@ -1236,73 +1250,92 @@ async function loadUsers() {
     renderUsersTable();
   } catch (error) {
     console.error("Erro ao carregar usuários:", error);
+    showAlert("Erro ao carregar usuários: " + error.message, "danger");
   }
 }
+
+// Função para editar usuário
+function editUser(userId) {
+    const user = users.find((u) => u.id === userId);
+    if (!user) return;
+  
+    document.getElementById("user-id").value = user.id;
+    document.getElementById("user-name").value = user.name || "";
+    document.getElementById("user-email").value = user.email || "";
+    document.getElementById("user-password").value = ""; // Sempre em branco por segurança
+    document.getElementById("user-role").value = user.role || "user";
+  
+    showUserModal(true);
+  }
+  
+  // Função para excluir usuário
+  async function deleteUser(userId) {
+    if (!confirm("Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.")) {
+      return;
+    }
+  
+    showLoading();
+    try {
+      // Excluir da tabela profile em vez de usar auth.admin.deleteUser
+      const { error } = await supabase
+        .from('profile')
+        .delete()
+        .eq('id', userId);
+  
+      if (error) throw error;
+  
+      // Atualizar lista de usuários
+      await loadUsers();
+      showAlert("Usuário excluído com sucesso!", "success");
+    } catch (error) {
+      console.error("Erro ao excluir usuário:", error);
+      showAlert("Erro ao excluir usuário: " + error.message, "danger");
+    } finally {
+      hideLoading();
+    }
+  }
+  
 
 function renderUsersTable() {
-  // Limpar tabela
-  usersTable.innerHTML = "";
-
-  if (users.length === 0) {
-    usersTable.innerHTML =
-      '<tr><td colspan="4" class="text-center">Nenhum usuário encontrado</td></tr>';
-    return;
+    // Limpar tabela
+    usersTable.innerHTML = "";
+  
+    if (users.length === 0) {
+      usersTable.innerHTML =
+        '<tr><td colspan="4" class="text-center">Nenhum usuário encontrado</td></tr>';
+      return;
+    }
+  
+    // Renderizar usuários
+    users.forEach((user) => {
+      const row = document.createElement("tr");
+      const role = user.role || "user";
+  
+      row.innerHTML = `
+        <td>${user.name || "Sem nome"}</td>
+        <td>${user.email || "Sem email"}</td>
+        <td>${getRoleText(role)}</td>
+        <td class="actions">
+          <button class="btn btn-sm btn-primary edit-user" data-id="${user.id}">Editar</button>
+          ${user.id !== currentUser.id
+            ? `<button class="btn btn-sm btn-danger delete-user" data-id="${user.id}">Excluir</button>`
+            : ""
+          }
+        </td>
+      `;
+  
+      usersTable.appendChild(row);
+    });
+  
+    // Adicionar event listeners para os botões
+    document.querySelectorAll(".edit-user").forEach((button) => {
+      button.addEventListener("click", (e) => editUser(e.target.dataset.id));
+    });
+  
+    document.querySelectorAll(".delete-user").forEach((button) => {
+      button.addEventListener("click", (e) => deleteUser(e.target.dataset.id));
+    });
   }
-
-  // Renderizar usuários
-  users.forEach((user) => {
-    const row = document.createElement("tr");
-    const role = user.user_metadata?.role || "user";
-
-    row.innerHTML = `
-                  <td>${user.user_metadata?.name || "Sem nome"}</td>
-                  <td>${user.email}</td>
-                  <td>${getRoleText(role)}</td>
-                  <td class="actions">
-                      <button class="btn btn-sm btn-primary edit-user" data-id="${
-                        user.id
-                      }">Editar</button>
-                      ${
-                        user.id !== currentUser.id
-                          ? `<button class="btn btn-sm btn-danger delete-user" data-id="${user.id}">Excluir</button>`
-                          : ""
-                      }
-                  </td>
-              `;
-
-    usersTable.appendChild(row);
-  });
-
-  // Adicionar event listeners para os botões
-  document.querySelectorAll(".edit-user").forEach((button) => {
-    button.addEventListener("click", (e) => editUser(e.target.dataset.id));
-  });
-
-  document.querySelectorAll(".delete-user").forEach((button) => {
-    button.addEventListener("click", (e) => deleteUser(e.target.dataset.id));
-  });
-}
-
-function showUserModal(isEdit = false) {
-  document.getElementById("user-modal-title").textContent = isEdit
-    ? "Editar Usuário"
-    : "Adicionar Usuário";
-  userModal.style.display = "block";
-}
-
-function editUser(userId) {
-  const user = users.find((u) => u.id === userId);
-  if (!user) return;
-
-  document.getElementById("user-id").value = user.id;
-  document.getElementById("user-name").value = user.user_metadata?.name || "";
-  document.getElementById("user-email").value = user.email;
-  document.getElementById("user-password").value = "";
-  document.getElementById("user-role").value =
-    user.user_metadata?.role || "user";
-
-  showUserModal(true);
-}
 
 async function deleteUser(userId) {
   if (
@@ -1329,60 +1362,192 @@ async function deleteUser(userId) {
   }
 }
 
+// Função para salvar usuário
 async function handleUserForm(e) {
-  e.preventDefault();
-
-  const userId = document.getElementById("user-id").value;
-  const name = document.getElementById("user-name").value;
-  const email = document.getElementById("user-email").value;
-  const password = document.getElementById("user-password").value;
-  const role = document.getElementById("user-role").value;
-
-  showLoading();
-  try {
-    if (userId) {
-      // Atualizar usuário existente
-      const userData = {
-        email,
-        user_metadata: { name, role },
-      };
-
-      if (password) {
-        userData.password = password;
-      }
-
-      const { error } = await supabase.auth.admin.updateUserById(
-        userId,
-        userData
-      );
-
-      if (error) throw error;
-    } else {
-      // Criar novo usuário
-      const { error } = await supabase.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true,
-        user_metadata: { name, role },
-      });
-
-      if (error) throw error;
+    e.preventDefault();
+  
+    const userId = document.getElementById("user-id").value;
+    const name = document.getElementById("user-name").value;
+    const email = document.getElementById("user-email").value;
+    const password = document.getElementById("user-password").value;
+    const role = document.getElementById("user-role").value;
+  
+    // Validação básica
+    if (!name || !email) {
+      showAlert("Nome e email são obrigatórios!", "danger");
+      return;
     }
-
-    // Fechar modal e limpar formulário
-    userModal.style.display = "none";
-    userForm.reset();
-    document.getElementById("user-id").value = "";
-
-    // Atualizar lista de usuários
-    await loadUsers();
-  } catch (error) {
-    console.error("Erro ao salvar usuário:", error);
-    alert("Erro ao salvar usuário: " + error.message);
-  } finally {
-    hideLoading();
+  
+    // Se for um novo usuário, senha é obrigatória
+    if (!userId && !password) {
+      showAlert("Senha é obrigatória para novos usuários!", "danger");
+      return;
+    }
+  
+    showLoading();
+    try {
+      let result;
+  
+      if (userId) {
+        // Editar usuário existente na tabela profile
+        result = await supabase
+          .from('profile')
+          .update({
+            name,
+            email,
+            role
+          })
+          .eq('id', userId);
+        
+        // Se a senha foi fornecida, implementar lógica para atualizar senha
+        // Isso geralmente requer uma função serverless ou endpoint de API separado
+        if (password) {
+          // Aqui você precisa implementar lógica para atualizar a senha do usuário
+          // Como não podemos usar admin.updateUserById, isso precisaria ser feito via
+          // uma função no backend ou seguindo o fluxo de "esqueci minha senha"
+          console.log("Atualização de senha requer implementação adicional no backend");
+        }
+      } else {
+        // Criar novo usuário na tabela profile
+        // Idealmente, o registro do usuário deveria ser feito via autenticação do Supabase
+        // e então os metadados do usuário salvos em profile
+        
+        // Gerar um UUID para o novo usuário
+        const newUserId = self.crypto.randomUUID();
+        
+        result = await supabase
+          .from('profile')
+          .insert([{
+            id: newUserId,
+            name,
+            email,
+            role,
+            created_at: new Date().toISOString()
+          }]);
+          
+        // Para registro de autenticação completo, é recomendado usar o fluxo de convite
+        // ou um endpoint serverless dedicado para criar usuários com autenticação
+      }
+  
+      if (result.error) throw result.error;
+  
+      // Fechar modal e limpar formulário
+      userModal.style.display = "none";
+      userForm.reset();
+      document.getElementById("user-id").value = "";
+  
+      // Atualizar lista de usuários
+      await loadUsers();
+      showAlert("Usuário salvo com sucesso!", "success");
+    } catch (error) {
+      console.error("Erro ao salvar usuário:", error);
+      showAlert("Erro ao salvar usuário: " + error.message, "danger");
+    } finally {
+      hideLoading();
+    }
   }
-}
+
+  
+// Função para criar a tabela profile no Supabase caso não exista
+async function createProfileTable() {
+    try {
+      // Executar uma função RPC que criará a tabela se não existir
+      await supabase.rpc("create_profile_table_if_not_exists");
+      console.log("Tabela profile criada ou já existente!");
+    } catch (error) {
+      console.error("Erro ao criar tabela profile:", error);
+    }
+  }
+  
+  // Adicionar à função createTables
+  async function createTables() {
+    try {
+      // Criar tabela de clientes
+      await supabase.rpc("create_clients_table_if_not_exists");
+  
+      // Criar tabela de serviços
+      await supabase.rpc("create_services_table_if_not_exists");
+  
+      // Criar tabela de ordens de serviço
+      await supabase.rpc("create_orders_table_if_not_exists");
+      
+      // Criar tabela de perfil de usuários
+      await createProfileTable();
+  
+      console.log("Tabelas criadas ou já existentes!");
+    } catch (error) {
+      console.error("Erro ao criar tabelas:", error);
+    }
+  }
+  
+  // Função auxiliar para verificar se o usuário atual existe na tabela profile
+// e criar seu registro caso não exista
+async function ensureUserProfileExists() {
+    if (!currentUser) return;
+    
+    try {
+      // Verificar se o usuário já existe na tabela profile
+      const { data, error } = await supabase
+        .from('profile')
+        .select('id')
+        .eq('id', currentUser.id)
+        .single();
+        
+      if (error && error.code !== 'PGRST116') {
+        // PGRST116 é o erro para "não encontrado", outros erros devem ser tratados
+        throw error;
+      }
+      
+      // Se o usuário não existir na tabela profile, criar
+      if (!data) {
+        const { error: insertError } = await supabase
+          .from('profile')
+          .insert([{
+            id: currentUser.id,
+            name: currentUser.user_metadata?.name || currentUser.email,
+            email: currentUser.email,
+            role: currentUser.user_metadata?.role || 'user',
+            created_at: new Date().toISOString()
+          }]);
+          
+        if (insertError) throw insertError;
+        console.log("Perfil de usuário criado com sucesso!");
+      }
+    } catch (error) {
+      console.error("Erro ao verificar/criar perfil do usuário:", error);
+    }
+  }
+  
+  // Adicionar chamada à função ensureUserProfileExists dentro de showDashboard
+  async function showDashboard() {
+    if (!currentUser) return;
+  
+    // Atualizar UI para o usuário logado
+    loginPage.style.display = "none";
+    dashboardPage.style.display = "block";
+  
+    userName.textContent = currentUser.user_metadata?.name || currentUser.email;
+    userAvatar.textContent = (
+      currentUser.user_metadata?.name?.charAt(0) || currentUser.email.charAt(0)
+    ).toUpperCase();
+  
+    // Verificar permissões de admin
+    if (isAdmin()) {
+      adminOnlyElements.forEach((el) => (el.style.display = "block"));
+    } else {
+      adminOnlyElements.forEach((el) => (el.style.display = "none"));
+    }
+    
+    // Garantir que o perfil do usuário existe
+    await ensureUserProfileExists();
+  
+    // Carregar dados do dashboard
+    await loadDashboardData();
+  
+    // Mostrar página ativa
+    showActivePage("dashboard");
+  }
+  
 
 // Navegação
 function showActivePage(pageId) {
@@ -1550,32 +1715,30 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-
 async function makeCurrentUserAdmin() {
-    try {
-        // Atualizar metadados do usuário para admin
-        const { data, error } = await supabase.auth.updateUser({
-            data: { role: 'admin' }
-        });
-        
-        if (error) {
-            throw error;
-        }
-        
-        // Atualizar o usuário atual no navegador
-        currentUser.user_metadata = currentUser.user_metadata || {};
-        currentUser.user_metadata.role = 'admin';
-        
-        // Atualizar a UI imediatamente
-        adminOnlyElements.forEach(el => el.style.display = 'block');
-        
-        alert('Você agora é administrador! As alterações foram aplicadas.');
-        
-        // Confirmar no console
-        console.log('Usuário definido como admin:', currentUser);
-        
-    } catch (error) {
-        console.error('Erro ao definir como admin:', error);
-        alert('Erro ao definir como admin: ' + error.message);
+  try {
+    // Atualizar metadados do usuário para admin
+    const { data, error } = await supabase.auth.updateUser({
+      data: { role: "admin" },
+    });
+
+    if (error) {
+      throw error;
     }
+
+    // Atualizar o usuário atual no navegador
+    currentUser.user_metadata = currentUser.user_metadata || {};
+    currentUser.user_metadata.role = "admin";
+
+    // Atualizar a UI imediatamente
+    adminOnlyElements.forEach((el) => (el.style.display = "block"));
+
+    alert("Você agora é administrador! As alterações foram aplicadas.");
+
+    // Confirmar no console
+    console.log("Usuário definido como admin:", currentUser);
+  } catch (error) {
+    console.error("Erro ao definir como admin:", error);
+    alert("Erro ao definir como admin: " + error.message);
+  }
 }
