@@ -3799,6 +3799,77 @@ function setupSettingsForm() {
     return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
   }
   
+  // Função para exportar dados para CSV
+function exportToCSV(data, filename) {
+  if (!data || !Array.isArray(data) || data.length === 0) {
+      showNotification('Erro', 'Não há dados para exportar', 'error');
+      return;
+  }
+
+  const headers = Object.keys(data[0]);
+  const csvContent = [
+      headers.join(','),
+      ...data.map(row => 
+          headers.map(header => {
+              let cell = row[header];
+              if (cell === null || cell === undefined) cell = '';
+              if (typeof cell === 'string') cell = `"${cell.replace(/"/g, '""')}"`;
+              if (cell instanceof Date) cell = cell.toISOString();
+              return cell;
+          }).join(',')
+      )
+  ].join('\n');
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// Função para formatar data para nome de arquivo
+function formatDateForFilename(date) {
+  return date.toISOString().split('T')[0];
+}
+
+// Função para configurar os botões de exportação
+function setupExportButtons() {
+  try {
+      const exportClientsBtn = document.getElementById('export-clients');
+      const exportServicesBtn = document.getElementById('export-services');
+      const exportOrdersBtn = document.getElementById('export-orders');
+      const exportAllBtn = document.getElementById('export-all');
+
+      if (exportClientsBtn) {
+          exportClientsBtn.addEventListener('click', async () => {
+              try {
+                  showLoading();
+                  const { data, error } = await supabase
+                      .from('clients')
+                      .select('*')
+                      .order('name');
+                      
+                  if (error) throw error;
+                  
+                  exportToCSV(data, `clientes_${formatDateForFilename(new Date())}.csv`);
+                  showNotification('Sucesso', 'Clientes exportados com sucesso!', 'success');
+              } catch (error) {
+                  console.error('Erro ao exportar clientes:', error);
+                  showNotification('Erro', 'Não foi possível exportar os clientes', 'error');
+              } finally {
+                  hideLoading();
+              }
+          });
+      }
+
+      // Repetir o mesmo padrão para services e orders...
+  } catch (error) {
+      console.error('Erro ao configurar botões de exportação:', error);
+      showNotification('Erro', 'Não foi possível configurar os botões de exportação', 'error');
+  }
+}
   // Configurar listeners para os formulários de configurações
   function setupSettingsListeners() {
     try {
