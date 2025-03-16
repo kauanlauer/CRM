@@ -1309,7 +1309,16 @@ function showUserModal(isEdit = false) {
   }
   
   modal.style.display = "block";
+  // Adiciona a classe show para a animação
+  setTimeout(() => modal.classList.add("show"), 10);
 }
+
+// Modificar o código de fechar o modal
+document.querySelector(".btn-secondary").addEventListener("click", () => {
+  const modal = document.getElementById("userModal");
+  modal.classList.remove("show");
+  setTimeout(() => modal.style.display = "none", 300);
+});
 
 function showUserModal(isEdit = false) {
     const modal = document.getElementById("userModal");
